@@ -1,0 +1,125 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Property {
+  id: String!
+  title: String!
+  slug: String!
+  status: PropertyStatus!
+  type: PropertyType!
+  description: String!
+  userId: String!
+  place: String!
+  lat: Float!
+  long: Float!
+  num_bathrooms: Int!
+  num_bedrooms: Int!
+  num_pools: Int!
+  num_parking_lot: Int!
+  created_at: Float!
+  updated_at: Float!
+  user: User!
+}
+
+"""Status of property"""
+enum PropertyStatus {
+  SALE
+  RENT
+}
+
+"""Type of property"""
+enum PropertyType {
+  APARTMENT
+  HOUSE
+}
+
+type User {
+  id: String!
+  name: String!
+  last_name: String!
+  email: String!
+  password: String!
+  is_active: Boolean!
+  roles: [String!]!
+  created_at: Float!
+  updated_at: Float!
+  properties: [Property!]
+}
+
+type AuthResponse {
+  access_token: String!
+}
+
+type Query {
+  users(paginationDto: PaginationDto!): [User!]!
+  user(id: String!): User!
+  property(term: String!): Property!
+}
+
+input PaginationDto {
+  limit: Int
+  offset: Int
+  order: String
+}
+
+type Mutation {
+  createUser(createUserInput: CreateUserInput!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  removeUser(id: String!): User!
+  login(authInput: AuthInput!): AuthResponse!
+  createProperty(createPropertyInput: CreatePropertyInput!): Property!
+  updateProperty(updatePropertyInput: UpdatePropertyInput!): Property!
+  removeProperty(id: String!): Property!
+}
+
+input CreateUserInput {
+  name: String!
+  last_name: String!
+  email: String!
+  password: String!
+  roles: [String!]
+}
+
+input UpdateUserInput {
+  name: String
+  last_name: String
+  email: String
+  password: String
+  roles: [String!]
+  id: String!
+}
+
+input AuthInput {
+  email: String!
+  password: String!
+}
+
+input CreatePropertyInput {
+  title: String!
+  status: PropertyStatus!
+  type: PropertyType!
+  place: String!
+  description: String!
+  lat: Float
+  long: Float
+  num_bathrooms: Int
+  num_bedrooms: Int
+  num_pools: Int
+  num_parking_lot: Int
+}
+
+input UpdatePropertyInput {
+  title: String
+  status: PropertyStatus
+  type: PropertyType
+  place: String
+  description: String
+  lat: Float
+  long: Float
+  num_bathrooms: Int
+  num_bedrooms: Int
+  num_pools: Int
+  num_parking_lot: Int
+  id: String!
+}
