@@ -1,22 +1,22 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { UseGuards } from '@nestjs/common';
 
-import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard';
 import { PaginationDto } from 'src/common/dtos/paginator.dto';
 import { User } from 'src/users/entities/user.entity';
 
-import { CurrentUser } from './decorators/current-user.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CreatePropertyInput } from './dto/create-property.input';
 import { Property } from './entities/property.entity';
 import { UpdatePropertyInput } from './dto/update-property.input';
 
 import { PropertyService } from './property.service';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { ValidRoles } from 'src/common/enums/valid-roles.enum';
 
 @Resolver(() => Property)
 export class PropertyResolver {
   constructor(private readonly propertyService: PropertyService) {}
 
-  @UseGuards(GqlAuthGuard)
+  @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
   @Mutation(() => Property)
   createProperty(
     @CurrentUser() user: User,
@@ -25,8 +25,8 @@ export class PropertyResolver {
     return this.propertyService.create(user, createPropertyInput);
   }
 
-  @Query(() => [Property], { name: 'property' })
-  async findAll(paginationDto: PaginationDto) {
+  @Query(() => [Property], { name: 'properties' })
+  async findAll(@Args('paginationDto') paginationDto: PaginationDto) {
     return await this.propertyService.findAll(paginationDto);
   }
 
@@ -35,7 +35,7 @@ export class PropertyResolver {
     return this.propertyService.findOne(term);
   }
 
-  @UseGuards(GqlAuthGuard)
+  @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
   @Mutation(() => Property)
   updateProperty(
     @Args('updatePropertyInput') updatePropertyInput: UpdatePropertyInput,
@@ -46,7 +46,7 @@ export class PropertyResolver {
     );
   }
 
-  @UseGuards(GqlAuthGuard)
+  @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
   @Mutation(() => Property)
   removeProperty(@Args('id', { type: () => String }) id: string) {
     return this.propertyService.remove(id);
