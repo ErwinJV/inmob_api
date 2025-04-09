@@ -3,21 +3,21 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
-import { UseGuards } from '@nestjs/common';
-import { GqlAuthGuard } from 'src/auth/guards/gql-auth.guard';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { ValidRoles } from 'src/common/enums/valid-roles.enum';
 import { PaginationDto } from 'src/common/dtos/paginator.dto';
 
 @Resolver(() => User)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
-  @UseGuards(GqlAuthGuard)
+  @Auth(ValidRoles.ADMIN)
   @Mutation(() => User)
   createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
     return this.usersService.create(createUserInput);
   }
 
-  @UseGuards(GqlAuthGuard)
+  @Auth(ValidRoles.ADMIN)
   @Query(() => [User], { name: 'users' })
   async users(
     @Args('paginationDto', { type: () => PaginationDto })
@@ -26,19 +26,19 @@ export class UsersResolver {
     return await this.usersService.findAll(paginationDto);
   }
 
-  @UseGuards(GqlAuthGuard)
+  @Auth(ValidRoles.ADMIN)
   @Query(() => User, { name: 'user' })
   user(@Args('id', { type: () => String }) id: string) {
     return this.usersService.findOne(id);
   }
 
-  @UseGuards(GqlAuthGuard)
+  @Auth(ValidRoles.ADMIN)
   @Mutation(() => User)
   updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
     return this.usersService.update(updateUserInput.id, updateUserInput);
   }
 
-  @UseGuards(GqlAuthGuard)
+  @Auth(ValidRoles.ADMIN)
   @Mutation(() => User)
   async removeUser(@Args('id', { type: () => String }) id: string) {
     return await this.usersService.remove(id);

@@ -30,7 +30,7 @@ export class User {
   is_active: boolean;
 
   @Field(() => [String])
-  @Column({ type: 'varchar', array: true, default: ['user'] })
+  @Column({ type: 'varchar', array: true, default: ['USER'] })
   roles: string[];
 
   @Field(() => Number)

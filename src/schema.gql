@@ -54,6 +54,7 @@ type AuthResponse {
 type Query {
   users(paginationDto: PaginationDto!): [User!]!
   user(id: String!): User!
+  properties(paginationDto: PaginationDto!): [Property!]!
   property(term: String!): Property!
 }
 
