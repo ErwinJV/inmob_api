@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreatePropertyInput } from './dto/create-property.input';
-import { UpdatePropertyInput } from './dto/update-property.input';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Property } from './entities/property.entity';
 import { Repository } from 'typeorm';
-import { User } from 'src/users/entities/user.entity';
+
 import { CommonService } from 'src/common/common.service';
+import { CreatePropertyInput } from './dto/create-property.input';
 import { PaginationDto } from 'src/common/dtos/paginator.dto';
+import { Property } from './entities/property.entity';
+import { UpdatePropertyInput } from './dto/update-property.input';
+import { User } from 'src/users/entities/user.entity';
 
 @Injectable()
 export class PropertyService {
@@ -17,7 +18,7 @@ export class PropertyService {
   ) {}
 
   async create(user: User, createPropertyInput: CreatePropertyInput) {
-    const slug = createPropertyInput.title.replaceAll(' ', '_');
+    const slug = createPropertyInput.title.replaceAll(' ', '-');
 
     const date = Date.now();
 
@@ -52,6 +53,8 @@ export class PropertyService {
       if (!properties || properties.length === 0) {
         throw new NotFoundException('Properties table are empty');
       }
+
+      return properties;
     } catch (error) {
       this.commonService.handleExceptions(error);
     }

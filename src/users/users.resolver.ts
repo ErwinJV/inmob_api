@@ -11,7 +11,7 @@ import { PaginationDto } from 'src/common/dtos/paginator.dto';
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
-  @Auth(ValidRoles.ADMIN)
+  //@Auth(ValidRoles.ADMIN)
   @Mutation(() => User)
   createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
     return this.usersService.create(createUserInput);
