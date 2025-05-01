@@ -14,7 +14,7 @@ import { PropertyStatus } from '../enums/property-status.enum';
 export class CreatePropertyInput {
   @Field(() => String)
   @IsString()
-  @MaxLength(90)
+  @MaxLength(80)
   title: string;
 
   @Field(() => PropertyStatus)
