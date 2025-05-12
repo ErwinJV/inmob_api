@@ -12,13 +12,21 @@ export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
   //@Auth(ValidRoles.ADMIN)
-  @Mutation(() => User)
+  @Mutation(() => User, {
+    name: 'createUser',
+    description:
+      'Create a user by createUserInput params, authorization bearer token is required in the header request',
+  })
   createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
     return this.usersService.create(createUserInput);
   }
 
   @Auth(ValidRoles.ADMIN)
-  @Query(() => [User], { name: 'users' })
+  @Query(() => [User], {
+    name: 'users',
+    description:
+      'Return a paginated list of users, authorization bearer token is required in the header request',
+  })
   async users(
     @Args('paginationDto', { type: () => PaginationDto })
     paginationDto: PaginationDto,
@@ -27,19 +35,30 @@ export class UsersResolver {
   }
 
   @Auth(ValidRoles.ADMIN)
-  @Query(() => User, { name: 'user' })
+  @Query(() => User, {
+    name: 'user',
+    description: `Return a single user required by id (uuid), authorization bearer token is required in the header request`,
+  })
   user(@Args('id', { type: () => String }) id: string) {
     return this.usersService.findOne(id);
   }
 
   @Auth(ValidRoles.ADMIN)
-  @Mutation(() => User)
+  @Mutation(() => User, {
+    name: 'updateUser',
+    description:
+      'Update a single user by updateUserParams and required id (uuid), authorization bearer token is required in the header request',
+  })
   updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
     return this.usersService.update(updateUserInput.id, updateUserInput);
   }
 
   @Auth(ValidRoles.ADMIN)
-  @Mutation(() => User)
+  @Mutation(() => User, {
+    name: 'removeUser',
+    description:
+      'Remove a single user required by a required id (uuid), authorization bearer token is required in the header request',
+  })
   async removeUser(@Args('id', { type: () => String }) id: string) {
     return await this.usersService.remove(id);
   }

@@ -98,7 +98,7 @@ export class Property {
   updated_at: number;
 
   @Field(() => User, {
-    description: `Property's user creator object data`,
+    description: `Property's user creator`,
   })
   @ManyToOne(() => User, (user) => user.properties)
   user: User;

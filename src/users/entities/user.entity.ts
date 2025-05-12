@@ -6,7 +6,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 @ObjectType()
 export class User {
   @Field(() => String, {
-    description: `User's id (uuid): Example: "c2793525-56c5-4fce-8240-f2d32d9fc695"`,
+    description: `User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695"`,
   })
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -36,7 +36,7 @@ export class User {
   is_active: boolean;
 
   @Field(() => [String], {
-    description: `Contains the user roles: Example: ['USER', 'ADMIN']`,
+    description: `Contains the user roles: Array  Example: ['USER', 'ADMIN']`,
   })
   @Column({ type: 'varchar', array: true, default: ['USER'] })
   roles: string[];
