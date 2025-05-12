@@ -17,7 +17,11 @@ export class PropertyResolver {
   constructor(private readonly propertyService: PropertyService) {}
 
   @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
-  @Mutation(() => Property)
+  @Mutation(() => Property, {
+    name: 'createProperty',
+    description:
+      'Create a property by createPropertyInput params, authorization bearer token is required in the header request',
+  })
   createProperty(
     @CurrentUser() user: User,
     @Args('createPropertyInput') createPropertyInput: CreatePropertyInput,
@@ -25,18 +29,29 @@ export class PropertyResolver {
     return this.propertyService.create(user, createPropertyInput);
   }
 
-  @Query(() => [Property], { name: 'properties' })
+  @Query(() => [Property], {
+    name: 'properties',
+    description: 'Returns a paginated list of properties',
+  })
   async findAll(@Args('paginationDto') paginationDto: PaginationDto) {
     return await this.propertyService.findAll(paginationDto);
   }
 
-  @Query(() => Property, { name: 'property' })
+  @Query(() => Property, {
+    name: 'property',
+    description:
+      'Return a single property by required term (property id or slug)',
+  })
   findOne(@Args('term', { type: () => String }) term: string) {
     return this.propertyService.findOne(term);
   }
 
   @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
-  @Mutation(() => Property)
+  @Mutation(() => Property, {
+    name: 'updateProperty',
+    description:
+      'Update a single property by updatePropertyInput params and required id, authorization bearer token is required in the header request',
+  })
   updateProperty(
     @Args('updatePropertyInput') updatePropertyInput: UpdatePropertyInput,
   ) {
@@ -47,7 +62,11 @@ export class PropertyResolver {
   }
 
   @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
-  @Mutation(() => Property)
+  @Mutation(() => Property, {
+    name: 'removeProperty',
+    description:
+      'Remove a single property by required id, authorization bearer token is required in the header request',
+  })
   removeProperty(@Args('id', { type: () => String }) id: string) {
     return this.propertyService.remove(id);
   }
