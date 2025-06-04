@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
+import { ObjectType, Field, Int, Float, ID } from '@nestjs/graphql';
 import { User } from 'src/users/entities/user.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { PropertyType } from '../enums/property-type.enum';
@@ -7,7 +7,7 @@ import { PropertyStatus } from '../enums/property-status.enum';
 @Entity()
 @ObjectType()
 export class Property {
-  @Field(() => String, {
+  @Field(() => ID, {
     description: `Property's id (uuid). Example: "f7d27564-939c-42f2-90f8-ee8eece4bc8c"`,
   })
   @PrimaryGeneratedColumn('uuid')

@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcryptjs';
 import { CommonService } from 'src/common/common.service';
 import { PaginationDto } from 'src/common/dtos/paginator.dto';
+import { UsersDataResponse } from './types/UsersDataResponse.type';
 
 @Injectable()
 export class UsersService {
@@ -76,10 +77,13 @@ export class UsersService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
+  async findAll(
+    paginationDto: PaginationDto,
+  ): Promise<UsersDataResponse | undefined> {
     const { limit = 0, offset = 0, order = 'DESC' } = paginationDto;
 
     try {
+      const total = await this.userRepository.count();
       const users = await this.userRepository.find({
         order: { id: { direction: order } },
         take: limit,
@@ -90,7 +94,10 @@ export class UsersService {
         throw new NotFoundException('Users table are empty');
       }
 
-      return users;
+      return {
+        total,
+        users,
+      };
     } catch (error) {
       this.commonService.handleExceptions(error);
     }
