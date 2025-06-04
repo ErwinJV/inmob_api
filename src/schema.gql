@@ -6,7 +6,7 @@ type Property {
   """
   Property's id (uuid). Example: "f7d27564-939c-42f2-90f8-ee8eece4bc8c"
   """
-  id: String!
+  id: ID!
 
   """
   Property's title, Example: "Apartamento en Buena Vista"
@@ -143,6 +143,16 @@ type User {
   properties: [Property!]
 }
 
+type UsersDataResponse {
+  """
+  Total users registered in the database, this data is useful for pagination
+  """
+  total: Int!
+
+  """Users, paginated by default in 10"""
+  users: [User!]!
+}
+
 type AuthResponse {
   """
   Bearer token response, add this in your header request for several requests
@@ -150,19 +160,29 @@ type AuthResponse {
   access_token: String!
 }
 
+type AuthVerificationResponse {
+  verification: Boolean!
+}
+
+type PropertiesDataResponse {
+  total: Int!
+  properties: [Property!]!
+}
+
 type Query {
   """
   Return a paginated list of users, authorization bearer token is required in the header request
   """
-  users(paginationDto: PaginationDto!): [User!]!
+  users(paginationDto: PaginationDto!): UsersDataResponse!
 
   """
   Return a single user required by id (uuid), authorization bearer token is required in the header request
   """
   user(id: String!): User!
+  verifyAuthToken: AuthVerificationResponse!
 
   """Returns a paginated list of properties"""
-  properties(paginationDto: PaginationDto!): [Property!]!
+  properties(paginationDto: PaginationDto!): PropertiesDataResponse!
 
   """Return a single property by required term (property id or slug)"""
   property(term: String!): Property!
@@ -205,6 +225,9 @@ type Mutation {
   Remove a single property by required id, authorization bearer token is required in the header request
   """
   removeProperty(id: String!): Property!
+
+  """Creates a multiple fake properties for development testing"""
+  createMultipleProperties(input: CreateMultiplePropertiesInput!): [Property!]!
 }
 
 input CreateUserInput {
@@ -386,5 +409,9 @@ input UpdatePropertyInput {
   """
   User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695". This field is required
   """
-  id: String!
+  id: ID!
+}
+
+input CreateMultiplePropertiesInput {
+  properties: [CreatePropertyInput!]!
 }

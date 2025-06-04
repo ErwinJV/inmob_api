@@ -6,12 +6,13 @@ import { UpdateUserInput } from './dto/update-user.input';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { ValidRoles } from 'src/common/enums/valid-roles.enum';
 import { PaginationDto } from 'src/common/dtos/paginator.dto';
+import { UsersDataResponse } from './types/UsersDataResponse.type';
 
 @Resolver(() => User)
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
-  //@Auth(ValidRoles.ADMIN)
+  @Auth(ValidRoles.ADMIN)
   @Mutation(() => User, {
     name: 'createUser',
     description:
@@ -22,7 +23,7 @@ export class UsersResolver {
   }
 
   @Auth(ValidRoles.ADMIN)
-  @Query(() => [User], {
+  @Query(() => UsersDataResponse, {
     name: 'users',
     description:
       'Return a paginated list of users, authorization bearer token is required in the header request',
@@ -30,7 +31,7 @@ export class UsersResolver {
   async users(
     @Args('paginationDto', { type: () => PaginationDto })
     paginationDto: PaginationDto,
-  ) {
+  ): Promise<UsersDataResponse | undefined> {
     return await this.usersService.findAll(paginationDto);
   }
 

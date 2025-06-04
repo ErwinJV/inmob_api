@@ -5,11 +5,13 @@ import { UsersModule } from 'src/users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { CommonModule } from 'src/common/common.module';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
+    CommonModule,
     JwtModule.register({
       secret: process.env['JWT_SECRET_KEY'],
       signOptions: {
