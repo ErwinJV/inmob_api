@@ -99,19 +99,21 @@ export class PropertyService {
   async update(id: string, updatePropertyInput: UpdatePropertyInput) {
     try {
       await this.findOne(id);
-      return await this.propertyRepository.update(id, {
+      const response = await this.propertyRepository.update(id, {
         ...updatePropertyInput,
         updated_at: Date.now(),
       });
+      return response;
     } catch (error) {
       this.commonService.handleExceptions(error);
     }
   }
-
   async remove(id: string) {
     try {
       const property = (await this.findOne(id)) as Property;
-      return await this.propertyRepository.remove(property);
+      const response = await this.propertyRepository.remove(property);
+      console.log({ response });
+      return response;
     } catch (error) {
       this.commonService.handleExceptions(error);
     }

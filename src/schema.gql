@@ -153,6 +153,10 @@ type UsersDataResponse {
   users: [User!]!
 }
 
+type UserUpdateResponse {
+  affected: Int
+}
+
 type AuthResponse {
   """
   Bearer token response, add this in your header request for several requests
@@ -167,6 +171,10 @@ type AuthVerificationResponse {
 type PropertiesDataResponse {
   total: Int!
   properties: [Property!]!
+}
+
+type PropertyUpdateResponse {
+  affected: Int
 }
 
 type Query {
@@ -203,7 +211,7 @@ type Mutation {
   """
   Update a single user by updateUserParams and required id (uuid), authorization bearer token is required in the header request
   """
-  updateUser(updateUserInput: UpdateUserInput!): User!
+  updateUser(updateUserInput: UpdateUserInput!): UserUpdateResponse!
 
   """
   Remove a single user required by a required id (uuid), authorization bearer token is required in the header request
@@ -219,7 +227,7 @@ type Mutation {
   """
   Update a single property by updatePropertyInput params and required id, authorization bearer token is required in the header request
   """
-  updateProperty(updatePropertyInput: UpdatePropertyInput!): Property!
+  updateProperty(updatePropertyInput: UpdatePropertyInput!): PropertyUpdateResponse!
 
   """
   Remove a single property by required id, authorization bearer token is required in the header request
@@ -409,7 +417,7 @@ input UpdatePropertyInput {
   """
   User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695". This field is required
   """
-  id: ID!
+  id: String!
 }
 
 input CreateMultiplePropertiesInput {
