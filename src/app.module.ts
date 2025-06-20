@@ -8,6 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { PropertyModule } from './property/property.module';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { PropertyModule } from './property/property.module';
     AuthModule,
     CommonModule,
     PropertyModule,
+    FilesModule,
   ],
   controllers: [],
   providers: [],

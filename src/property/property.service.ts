@@ -9,24 +9,31 @@ import { Property } from './entities/property.entity';
 import { UpdatePropertyInput } from './dto/update-property.input';
 import { User } from 'src/users/entities/user.entity';
 import { PropertiesDataResponse } from './types/PropertiesDataResponse.type';
+import { CreatePropertyFileInput } from './dto/create-property-file.input';
+import { PropertyImage } from './entities/property-image.entity';
 
 @Injectable()
 export class PropertyService {
   constructor(
     @InjectRepository(Property)
     private readonly propertyRepository: Repository<Property>,
+    @InjectRepository(PropertyImage)
+    private readonly propertyImageRepository: Repository<PropertyImage>,
     private readonly commonService: CommonService,
   ) {}
 
   async create(user: User, createPropertyInput: CreatePropertyInput) {
     const slug = createPropertyInput.title.replaceAll(' ', '-');
 
+    const { ...propertyDetails } = createPropertyInput;
+
     const date = Date.now();
     console.log(user);
     try {
       const property = this.propertyRepository.create({
-        ...createPropertyInput,
+        ...propertyDetails,
         slug,
+
         userId: user.id,
         created_at: date,
         updated_at: date,
@@ -139,5 +146,68 @@ export class PropertyService {
 
   async countProperties(): Promise<number> {
     return await this.propertyRepository.count();
+  }
+
+  async uploadFile(
+    createPropertyFileInput: CreatePropertyFileInput,
+    file: Express.Multer.File,
+  ): Promise<PropertyImage | undefined> {
+    try {
+      const fileName = await this.sendFile(createPropertyFileInput, file);
+      const { property_id } = createPropertyFileInput;
+      const property = await this.findOne(property_id);
+
+      const image = this.propertyImageRepository.create({
+        property,
+        url: `http://localhost:8080/uploads/properties/${property_id}/${fileName}`,
+      });
+
+      return await this.propertyImageRepository.save(image);
+    } catch (error) {
+      this.commonService.handleExceptions(error);
+    }
+  }
+
+  async deleteFile({
+    entity,
+    fileName,
+    id,
+  }: {
+    entity: string;
+    id: string;
+    fileName: string;
+  }) {
+    try {
+      const deleteFile = await fetch(
+        `http://localhost:8080/api/uploads/${entity}/${id}/${fileName}`,
+      );
+      const response = (await deleteFile.json()) as unknown as { msg: string };
+      return response;
+    } catch (error) {
+      this.commonService.handleExceptions(error);
+    }
+  }
+
+  private async sendFile(
+    createPropertyFileInput: CreatePropertyFileInput,
+    file: Express.Multer.File,
+  ): Promise<string> {
+    const formData = new FormData();
+    const { property_id } = createPropertyFileInput;
+    const blob = new Blob([file.buffer], { type: file.mimetype });
+    formData.append('file', blob);
+    formData.append('entity', 'properties');
+    formData.append('entityID', property_id);
+
+    const response = await fetch(`http://localhost:8080/api/uploads/`, {
+      body: formData,
+      method: 'post',
+    });
+
+    const { fileName } = (await response.json()) as unknown as {
+      fileName: string;
+    };
+
+    return fileName;
   }
 }
