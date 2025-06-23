@@ -30,6 +30,7 @@ export class PropertyController {
     @Body() createPropertyFileInput: CreatePropertyFileInput,
     @UploadedFile() file: Express.Multer.File,
   ) {
+    console.log({ createPropertyFileInput });
     if (!file) throw new BadRequestException(`File is undefined`);
 
     return await this.propertyService.uploadFile(createPropertyFileInput, file);
