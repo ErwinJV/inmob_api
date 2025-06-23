@@ -17,6 +17,6 @@ export class PropertyImage {
   property: Property;
 
   @Field(() => String)
-  @Column('varchar')
+  @Column('varchar', { unique: true })
   url: string;
 }

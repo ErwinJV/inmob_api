@@ -11,6 +11,7 @@ import { UsersModule } from 'src/users/users.module';
 import { PropertyController } from './property.controller';
 import { FilesModule } from 'src/files/files.module';
 import { PropertyImage } from './entities/property-image.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 registerEnumType(PropertyType, {
   name: 'PropertyType',
@@ -29,6 +30,7 @@ registerEnumType(PropertyStatus, {
     CommonModule,
     UsersModule,
     FilesModule,
+    AuthModule,
   ],
   providers: [PropertyResolver, PropertyService],
   exports: [PropertyModule],

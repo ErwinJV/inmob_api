@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -26,6 +30,18 @@ export class PropertyService {
     const slug = createPropertyInput.title.replaceAll(' ', '-');
 
     const { ...propertyDetails } = createPropertyInput;
+
+    if (
+      !propertyDetails.title ||
+      !propertyDetails.description ||
+      !propertyDetails.type ||
+      !propertyDetails.status ||
+      !propertyDetails.place
+    ) {
+      throw new BadRequestException(
+        `Some of the not-null values (title,description,type,status,place) of createUserInput is undefined`,
+      );
+    }
 
     const date = Date.now();
     console.log(user);
@@ -178,11 +194,20 @@ export class PropertyService {
     fileName: string;
   }) {
     try {
-      const deleteFile = await fetch(
-        `http://localhost:8080/api/uploads/${entity}/${id}/${fileName}`,
-      );
-      const response = (await deleteFile.json()) as unknown as { msg: string };
-      return response;
+      const url = `http://localhost:8080/uploads/${entity}/${id}/${fileName}`;
+      const deleteUrl = `${process.env['FILE_SERVER_SERVICE_URL']}/api/uploads/${entity}/${id}/${fileName}`;
+      await fetch(deleteUrl, {
+        method: 'delete',
+      });
+      const image = await this.propertyImageRepository.findOne({
+        where: { url },
+      });
+      if (!image) {
+        throw new NotFoundException(`Image not exists!`);
+      }
+      await this.propertyImageRepository.remove(image);
+
+      return { msg: 'File deleted' };
     } catch (error) {
       this.commonService.handleExceptions(error);
     }
