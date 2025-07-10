@@ -180,7 +180,6 @@ export class PropertyService {
 
       return await this.propertyImageRepository.save(image);
     } catch (error) {
-      console.log({ error });
       this.commonService.handleExceptions(error);
     }
   }
