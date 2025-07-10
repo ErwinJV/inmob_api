@@ -7,6 +7,7 @@ import { Auth } from 'src/auth/decorators/auth.decorator';
 import { ValidRoles } from 'src/common/enums/valid-roles.enum';
 import { PaginationDto } from 'src/common/dtos/paginator.dto';
 import { UsersDataResponse } from './types/UsersDataResponse.type';
+import { UserUpdateResponse } from './types/UserUpdateResponse.type';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -45,7 +46,7 @@ export class UsersResolver {
   }
 
   @Auth(ValidRoles.ADMIN)
-  @Mutation(() => User, {
+  @Mutation(() => UserUpdateResponse, {
     name: 'updateUser',
     description:
       'Update a single user by updateUserParams and required id (uuid), authorization bearer token is required in the header request',

@@ -10,7 +10,9 @@ import { CommonModule } from 'src/common/common.module';
 @Module({
   imports: [
     UsersModule,
-    PassportModule,
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+    }),
     CommonModule,
     JwtModule.register({
       secret: process.env['JWT_SECRET_KEY'],
@@ -20,6 +22,6 @@ import { CommonModule } from 'src/common/common.module';
     }),
   ],
   providers: [AuthResolver, AuthService, JwtStrategy],
-  exports: [AuthService],
+  exports: [AuthService, PassportModule],
 })
 export class AuthModule {}

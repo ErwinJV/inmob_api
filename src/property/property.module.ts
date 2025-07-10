@@ -8,6 +8,10 @@ import { registerEnumType } from '@nestjs/graphql';
 import { PropertyType } from './enums/property-type.enum';
 import { PropertyStatus } from './enums/property-status.enum';
 import { UsersModule } from 'src/users/users.module';
+import { PropertyController } from './property.controller';
+import { FilesModule } from 'src/files/files.module';
+import { PropertyImage } from './entities/property-image.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 registerEnumType(PropertyType, {
   name: 'PropertyType',
@@ -20,8 +24,16 @@ registerEnumType(PropertyStatus, {
 });
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Property]), CommonModule, UsersModule],
+  imports: [
+    TypeOrmModule.forFeature([Property]),
+    TypeOrmModule.forFeature([PropertyImage]),
+    CommonModule,
+    UsersModule,
+    FilesModule,
+    AuthModule,
+  ],
   providers: [PropertyResolver, PropertyService],
   exports: [PropertyModule],
+  controllers: [PropertyController],
 })
 export class PropertyModule {}

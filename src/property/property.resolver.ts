@@ -22,6 +22,8 @@ import { CreateMultiplePropertiesInput } from './dto/create-multiple-property-in
 import { UsersService } from 'src/users/users.service';
 import { PropertiesDataResponse } from './types/PropertiesDataResponse.type';
 
+import { PropertyUpdateResponse } from './types/PropertyUpdateResponse.type';
+
 @Resolver(() => Property)
 export class PropertyResolver {
   constructor(
@@ -62,7 +64,7 @@ export class PropertyResolver {
   }
 
   @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
-  @Mutation(() => Property, {
+  @Mutation(() => PropertyUpdateResponse, {
     name: 'updateProperty',
     description:
       'Update a single property by updatePropertyInput params and required id, authorization bearer token is required in the header request',
@@ -82,8 +84,8 @@ export class PropertyResolver {
     description:
       'Remove a single property by required id, authorization bearer token is required in the header request',
   })
-  removeProperty(@Args('id', { type: () => String }) id: string) {
-    return this.propertyService.remove(id);
+  async removeProperty(@Args('id', { type: () => String }) id: string) {
+    return await this.propertyService.remove(id);
   }
 
   @Auth(ValidRoles.ADMIN)

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import { Repository } from 'typeorm';
@@ -20,6 +24,16 @@ export class UsersService {
 
   async create(createUserInput: CreateUserInput) {
     const date = Date.now();
+    if (
+      !createUserInput.name ||
+      !createUserInput.last_name ||
+      !createUserInput.email ||
+      !createUserInput.password
+    ) {
+      throw new BadRequestException(
+        `Some of the not-null values (name,last_name,email,password) of createUserInput is undefined`,
+      );
+    }
     try {
       const hashedPassword = await bcrypt.hash(createUserInput.password, 10);
       const user = this.userRepository.create({
@@ -119,9 +133,9 @@ export class UsersService {
     try {
       const user = await this.findOne(id);
       if (!user) {
-        throw new NotFoundException(``);
+        throw new NotFoundException(`User with ${id} not found`);
       }
-      await this.userRepository.remove(user);
+      return await this.userRepository.remove(user);
     } catch (error) {
       this.commonService.handleExceptions(error);
     }

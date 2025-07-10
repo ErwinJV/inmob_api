@@ -1,8 +1,15 @@
 import { ObjectType, Field, Int, Float, ID } from '@nestjs/graphql';
 import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { PropertyType } from '../enums/property-type.enum';
 import { PropertyStatus } from '../enums/property-status.enum';
+import { PropertyImage } from './property-image.entity';
 
 @Entity()
 @ObjectType()
@@ -57,42 +64,56 @@ export class Property {
 
   @Field(() => Float, {
     description: `Property's latitude (Google Maps). Example: "41.40338"`,
+    nullable: true,
   })
   @Column({ type: 'float', nullable: true })
   lat?: number;
 
   @Field(() => Float, {
     description: `Property's longitude (Google Maps). Example: "2.17403"`,
+    nullable: true,
   })
   @Column({ type: 'float', nullable: true })
   long?: number;
 
-  @Field(() => Int, { description: `Property's total bathrooms. Example: "2"` })
+  @Field(() => Int, {
+    description: `Property's total bathrooms. Example: "2"`,
+    nullable: true,
+  })
   @Column({ type: 'smallint', nullable: true })
   num_bathrooms?: number;
 
-  @Field(() => Int, { description: `Property's total bedrooms. Example: "4"` })
+  @Field(() => Int, {
+    description: `Property's total bedrooms. Example: "4"`,
+    nullable: true,
+  })
   @Column({ type: 'smallint', nullable: true })
   num_bedrooms?: number;
 
-  @Field(() => Int, { description: `Property's total pools. Example: "1"` })
+  @Field(() => Int, {
+    description: `Property's total pools. Example: "1"`,
+    nullable: true,
+  })
   @Column({ type: 'smallint', nullable: true })
   num_pools?: number;
 
   @Field(() => Int, {
     description: `Property's total parkings lot. Example: "2"`,
+    nullable: true,
   })
   @Column({ type: 'smallint', nullable: true })
   num_parking_lot?: number;
 
   @Field(() => Number, {
     description: `Property's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"`,
+    nullable: true,
   })
   @Column({ type: 'numeric' })
   created_at: number;
 
   @Field(() => Number, {
     description: `Property's last update date in epoch format (milliseconds) by Date.now() method. Example: "1519211809934"`,
+    nullable: true,
   })
   @Column({ type: 'numeric' })
   updated_at: number;
@@ -102,4 +123,11 @@ export class Property {
   })
   @ManyToOne(() => User, (user) => user.properties)
   user: User;
+
+  @Field(() => [PropertyImage], { nullable: true })
+  @OneToMany(() => PropertyImage, (propertyImage) => propertyImage.property, {
+    cascade: true,
+    eager: true,
+  })
+  images?: PropertyImage[];
 }
