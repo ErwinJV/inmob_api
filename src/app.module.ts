@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { CommonModule } from './common/common.module';
 import { PropertyModule } from './property/property.module';
 import { FilesModule } from './files/files.module';
+import { PromptAiModule } from './prompt-ai/prompt-ai.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { FilesModule } from './files/files.module';
     CommonModule,
     PropertyModule,
     FilesModule,
+    PromptAiModule,
   ],
   controllers: [],
   providers: [],
