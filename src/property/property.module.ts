@@ -33,7 +33,7 @@ registerEnumType(PropertyStatus, {
     AuthModule,
   ],
   providers: [PropertyResolver, PropertyService],
-  exports: [PropertyModule],
+  exports: [PropertyService],
   controllers: [PropertyController],
 })
 export class PropertyModule {}

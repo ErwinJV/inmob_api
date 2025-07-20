@@ -1,9 +1,33 @@
-# ------------------------------------------------------
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+
+import { CreatePromptAiDto } from './dto/create-prompt-ai.dto';
+
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { CreatePropertyInput } from 'src/property/dto/create-property.input';
+
+import { PropertyService } from 'src/property/property.service';
+import { UsersService } from 'src/users/users.service';
+import { PropertyStatus } from 'src/property/enums/property-status.enum';
+import { PropertyType } from 'src/property/enums/property-type.enum';
+
+const genAI = new GoogleGenerativeAI('AIzaSyBO_PkNoPsyCeg73IS7bJdZNXIXxWAd2e8');
+
+@Injectable()
+export class PromptAiService {
+  constructor(
+    private readonly userService: UsersService,
+    private readonly propertyService: PropertyService,
+  ) {}
+
+  async parseMessageToProperty(createPromptAiDto: CreatePromptAiDto) {
+    const { message } = createPromptAiDto;
+    const schemaGql = `# ------------------------------------------------------
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
 type PropertyImage {
-  """"""
+  """
+  """
   id: ID!
   property: Property!
   url: String!
@@ -36,16 +60,18 @@ type Property {
   type: PropertyType!
 
   """
-  Property's description. Max character length: 125, Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc." 
+  Property's description. Max character length: 125, Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc."
   """
   description: String!
 
   """
-  Property's user id creator. Example: "1b8800a2-2385-403a-893b-3eba76ba4608" 
+  Property's user id creator. Example: "1b8800a2-2385-403a-893b-3eba76ba4608"
   """
   userId: String!
 
-  """Property's place. Example: "Av. Bella Vista Maracaibo, Zulia'"""
+  """
+  Property's place. Example: "Av. Bella Vista Maracaibo, Zulia'
+  """
   place: String!
 
   """
@@ -88,18 +114,24 @@ type Property {
   """
   updated_at: Float
 
-  """Property's user creator"""
+  """
+  Property's user creator
+  """
   user: User!
   images: [PropertyImage!]
 }
 
-"""Status of property"""
+"""
+Status of property
+"""
 enum PropertyStatus {
   SALE
   RENT
 }
 
-"""Type of property"""
+"""
+Type of property
+"""
 enum PropertyType {
   APARTMENT
   HOUSE
@@ -126,7 +158,9 @@ type User {
   """
   email: String!
 
-  """User's password. Must be encrypted"""
+  """
+  User's password. Must be encrypted
+  """
   password: String!
 
   """
@@ -134,7 +168,9 @@ type User {
   """
   is_active: Boolean!
 
-  """Contains the user roles: Array  Example: ['USER', 'ADMIN']"""
+  """
+  Contains the user roles: Array  Example: ['USER', 'ADMIN']
+  """
   roles: [String!]!
 
   """
@@ -147,7 +183,9 @@ type User {
   """
   updated_at: Float!
 
-  """Array that contains Properties created by the user"""
+  """
+  Array that contains Properties created by the user
+  """
   properties: [Property!]
 }
 
@@ -157,7 +195,9 @@ type UsersDataResponse {
   """
   total: Int!
 
-  """Users, paginated by default in 10"""
+  """
+  Users, paginated by default in 10
+  """
   users: [User!]!
 }
 
@@ -197,10 +237,14 @@ type Query {
   user(id: String!): User!
   verifyAuthToken: AuthVerificationResponse!
 
-  """Returns a paginated list of properties"""
+  """
+  Returns a paginated list of properties
+  """
   properties(paginationDto: PaginationDto!): PropertiesDataResponse!
 
-  """Return a single property by required term (property id or slug)"""
+  """
+  Return a single property by required term (property id or slug)
+  """
   property(term: String!): Property!
 }
 
@@ -235,20 +279,24 @@ type Mutation {
   """
   Update a single property by updatePropertyInput params and required id, authorization bearer token is required in the header request
   """
-  updateProperty(updatePropertyInput: UpdatePropertyInput!): PropertyUpdateResponse!
+  updateProperty(
+    updatePropertyInput: UpdatePropertyInput!
+  ): PropertyUpdateResponse!
 
   """
   Remove a single property by required id, authorization bearer token is required in the header request
   """
   removeProperty(id: String!): Property!
 
-  """Creates a multiple fake properties for development testing"""
+  """
+  Creates a multiple fake properties for development testing
+  """
   createMultipleProperties(input: CreateMultiplePropertiesInput!): [Property!]!
 }
 
 input CreateUserInput {
   """
-  User's name, Example: "John". This field is required | Maximum character length of 25 
+  User's name, Example: "John". This field is required | Maximum character length of 25
   """
   name: String!
 
@@ -275,7 +323,7 @@ input CreateUserInput {
 
 input UpdateUserInput {
   """
-  User's name, Example: "John". This field is required | Maximum character length of 25 
+  User's name, Example: "John". This field is required | Maximum character length of 25
   """
   name: String
 
@@ -323,10 +371,14 @@ input CreatePropertyInput {
   """
   title: String!
 
-  """Property's status. Example: "SALE". This field is required"""
+  """
+  Property's status. Example: "SALE". This field is required
+  """
   status: PropertyStatus!
 
-  """Property's type. Example: "HOUSE". This field is required"""
+  """
+  Property's type. Example: "HOUSE". This field is required
+  """
   type: PropertyType!
 
   """
@@ -335,7 +387,7 @@ input CreatePropertyInput {
   place: String!
 
   """
-  Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420 
+  Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420
   """
   description: String!
 
@@ -376,10 +428,14 @@ input UpdatePropertyInput {
   """
   title: String
 
-  """Property's status. Example: "SALE". This field is required"""
+  """
+  Property's status. Example: "SALE". This field is required
+  """
   status: PropertyStatus
 
-  """Property's type. Example: "HOUSE". This field is required"""
+  """
+  Property's type. Example: "HOUSE". This field is required
+  """
   type: PropertyType
 
   """
@@ -388,7 +444,7 @@ input UpdatePropertyInput {
   place: String
 
   """
-  Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420 
+  Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420
   """
   description: String
 
@@ -430,4 +486,49 @@ input UpdatePropertyInput {
 
 input CreateMultiplePropertiesInput {
   properties: [CreatePropertyInput!]!
+}
+`;
+
+    try {
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const result = await model.generateContent(
+        `En base a la estructura de mi schema.gql procesa el siguente mensage a un valor en objeto javascript que corresponda a la estructura de Property y pueda ser usado como parametro para la mutation createProperty, solo devuelve el objeto para parsearlo a objeto con el metodo JSON.parse(), sin ningun texto adicional, solo el objeto, y asegurate que las propiedades no excedan el limite de caracteres permitidos
+          Mensaje: ${message}.
+          schema.gql:${schemaGql}`,
+      );
+
+      const res = result.response.text();
+      const parseProperty = this.parseMarkdownJson(res);
+      // TODO: Put user promp ai or principal ADMIN user email from enviroment variable
+      const user = await this.userService.findOneByEmail('erwinjv98@gmail.com');
+      const processProperty: CreatePropertyInput = {
+        ...parseProperty,
+        status:
+          parseProperty.status === PropertyStatus.SALE
+            ? PropertyStatus.SALE
+            : PropertyStatus.RENT,
+        type:
+          parseProperty.type === PropertyType.HOUSE
+            ? PropertyType.HOUSE
+            : PropertyType.APARTMENT,
+      };
+      await this.propertyService.create(user, processProperty);
+      console.log({ parseProperty });
+      return { parseProperty };
+    } catch (error) {
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  private parseMarkdownJson(input: string) {
+    // Expresión regular para extraer el contenido JSON
+    const jsonRegex = /```json\n([\s\S]*?)\n```/;
+    const match = input.match(jsonRegex);
+
+    if (!match || !match[1]) {
+      throw new Error('No se encontró bloque JSON válido');
+    }
+
+    return JSON.parse(match[1]) as CreatePropertyInput;
+  }
 }
