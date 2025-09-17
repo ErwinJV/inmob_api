@@ -28,9 +28,10 @@ export class PropertyService {
 
   async create(user: User, createPropertyInput: CreatePropertyInput) {
     const slug = createPropertyInput.title.replaceAll(' ', '-');
+    console.log({ createPropertyInput });
 
     const { ...propertyDetails } = createPropertyInput;
-
+    console.log({ propertyDetails });
     if (
       !propertyDetails.title ||
       !propertyDetails.description ||
@@ -169,13 +170,16 @@ export class PropertyService {
     file: Express.Multer.File,
   ): Promise<PropertyImage | undefined> {
     try {
+      const FILE_SERVER_SERVICE_URL = process.env[
+        'FILE_SERVER_SERVICE_URL'
+      ] as string;
       const fileName = await this.sendFile(createPropertyFileInput, file);
       const { property_id } = createPropertyFileInput;
       const property = await this.findOne(property_id);
 
       const image = this.propertyImageRepository.create({
         property,
-        url: `http://localhost:8080/uploads/properties/${property_id}/${fileName}`,
+        url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
       });
 
       return await this.propertyImageRepository.save(image);
@@ -194,7 +198,10 @@ export class PropertyService {
     fileName: string;
   }) {
     try {
-      const url = `http://localhost:8080/uploads/${entity}/${id}/${fileName}`;
+      const FILE_SERVER_SERVICE_URL = process.env[
+        'FILE_SERVER_SERVICE_URL'
+      ] as string;
+      const url = `${FILE_SERVER_SERVICE_URL}/uploads/${entity}/${id}/${fileName}`;
       const deleteUrl = `${process.env['FILE_SERVER_SERVICE_URL']}/api/uploads/${entity}/${id}/${fileName}`;
       await fetch(deleteUrl, {
         method: 'delete',
@@ -217,6 +224,9 @@ export class PropertyService {
     createPropertyFileInput: CreatePropertyFileInput,
     file: Express.Multer.File,
   ): Promise<string> {
+    const FILE_SERVER_SERVICE_URL = process.env[
+      'FILE_SERVER_SERVICE_URL'
+    ] as string;
     const formData = new FormData();
     const { property_id } = createPropertyFileInput;
     const blob = new Blob([file.buffer], { type: file.mimetype });
@@ -224,7 +234,7 @@ export class PropertyService {
     formData.append('entity', 'properties');
     formData.append('entityID', property_id);
 
-    const response = await fetch(`http://localhost:8080/api/uploads/`, {
+    const response = await fetch(`${FILE_SERVER_SERVICE_URL}/api/uploads/`, {
       body: formData,
       method: 'post',
     });
