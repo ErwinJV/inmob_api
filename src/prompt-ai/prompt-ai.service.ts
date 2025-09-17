@@ -7,8 +7,6 @@ import { CreatePropertyInput } from 'src/property/dto/create-property.input';
 
 import { PropertyService } from 'src/property/property.service';
 import { UsersService } from 'src/users/users.service';
-import { PropertyStatus } from 'src/property/enums/property-status.enum';
-import { PropertyType } from 'src/property/enums/property-type.enum';
 
 @Injectable()
 export class PromptAiService {
