@@ -23,13 +23,13 @@ export class Property {
   @Field(() => String, {
     description: `Property's title. Max character length: 25, Example: "Apartamento en Buena Vista. "`,
   })
-  @Column({ type: 'varchar', length: 25, unique: true })
+  @Column({ type: 'varchar', length: 125, unique: true })
   title: string;
 
   @Field(() => String, {
     description: `Property's slug, generate based of the title property. Max character length: 25, Example: "Apartamento-en-Buena-Vista"`,
   })
-  @Column({ type: 'varchar', length: 25, unique: true })
+  @Column({ type: 'varchar', length: 125, unique: true })
   slug: string;
 
   @Field(() => PropertyStatus, {
@@ -47,7 +47,7 @@ export class Property {
   @Field(() => String, {
     description: `Property's description. Max character length: 125, Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc." `,
   })
-  @Column({ type: 'varchar', length: 125 })
+  @Column({ type: 'varchar', length: 1200 })
   description: string;
 
   @Field(() => String, {
@@ -59,7 +59,7 @@ export class Property {
   @Field(() => String, {
     description: `Property's place. Example: "Av. Bella Vista Maracaibo, Zulia'`,
   })
-  @Column({ type: 'varchar', length: 90 })
+  @Column({ type: 'varchar', length: 125 })
   place: string;
 
   @Field(() => Float, {

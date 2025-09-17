@@ -10,8 +10,6 @@ import { UsersService } from 'src/users/users.service';
 import { PropertyStatus } from 'src/property/enums/property-status.enum';
 import { PropertyType } from 'src/property/enums/property-type.enum';
 
-const genAI = new GoogleGenerativeAI('AIzaSyBO_PkNoPsyCeg73IS7bJdZNXIXxWAd2e8');
-
 @Injectable()
 export class PromptAiService {
   constructor(
@@ -20,6 +18,9 @@ export class PromptAiService {
   ) {}
 
   async parseMessageToProperty(createPromptAiDto: CreatePromptAiDto) {
+    const genAI = new GoogleGenerativeAI(
+      process.env['GOOGLE_GEMINI_AI_API_KEY'] as string,
+    );
     const { message } = createPromptAiDto;
     const schemaGql = `# ------------------------------------------------------
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
@@ -492,27 +493,15 @@ input CreateMultiplePropertiesInput {
     try {
       const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       const result = await model.generateContent(
-        `En base a la estructura de mi schema.gql procesa el siguente mensage a un valor en objeto javascript que corresponda a la estructura de Property y pueda ser usado como parametro para la mutation createProperty, solo devuelve el objeto para parsearlo a objeto con el metodo JSON.parse(), sin ningun texto adicional, solo el objeto, y asegurate que las propiedades no excedan el limite de caracteres permitidos
+        `En base a la estructura de mi schema.gql procesa el siguente mensage a un valor en objeto javascript que corresponda a la estructura de Property y pueda ser usado como parametro para la mutation createProperty, solo devuelve el objeto para parsearlo a objeto con el metodo JSON.parse(), sin ningun texto adicional, solo el objeto, y asegurate que las propiedades no excedan el limite de caracteres permitidos, esto lo puedes revisar en el texto del schema.gql
           Mensaje: ${message}.
           schema.gql:${schemaGql}`,
       );
 
       const res = result.response.text();
       const parseProperty = this.parseMarkdownJson(res);
-      // TODO: Put user promp ai or principal ADMIN user email from enviroment variable
-      const user = await this.userService.findOneByEmail('erwinjv98@gmail.com');
-      const processProperty: CreatePropertyInput = {
-        ...parseProperty,
-        status:
-          parseProperty.status === PropertyStatus.SALE
-            ? PropertyStatus.SALE
-            : PropertyStatus.RENT,
-        type:
-          parseProperty.type === PropertyType.HOUSE
-            ? PropertyType.HOUSE
-            : PropertyType.APARTMENT,
-      };
-      await this.propertyService.create(user, processProperty);
+
+      // await this.propertyService.create(user, processProperty);
       console.log({ parseProperty });
       return { parseProperty };
     } catch (error) {

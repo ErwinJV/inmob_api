@@ -98,6 +98,7 @@ export class PropertyResolver {
     @Args('input')
     input: CreateMultiplePropertiesInput,
   ) {
+    console.log({ user });
     return await this.propertyService.createMultipleProperties(
       user,
       input.properties,

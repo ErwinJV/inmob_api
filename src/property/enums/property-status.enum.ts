@@ -1,4 +1,4 @@
 export enum PropertyStatus {
-  SALE,
-  RENT,
+  SALE = 'SALE',
+  RENT = 'RENT',
 }
