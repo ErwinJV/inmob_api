@@ -25,6 +25,9 @@ type Property {
   """
   slug: String!
 
+  """Area in square meters of the property"""
+  area: Int!
+
   """
   Property's status. Example: "SALE"
   """
@@ -39,6 +42,11 @@ type Property {
   Property's description. Max character length: 125, Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc." 
   """
   description: String!
+
+  """
+  Property's price. Example: "125000.00"
+  """
+  price: Float!
 
   """
   Property's user id creator. Example: "1b8800a2-2385-403a-893b-3eba76ba4608" 
@@ -199,15 +207,35 @@ type Query {
 
   """Returns a paginated list of properties"""
   properties(paginationDto: PaginationDto!): PropertiesDataResponse!
+  filterProperties(paginationDto: PaginationDto!, filters: PropertyFilterInput): PropertiesDataResponse!
 
-  """Return a single property by required term (property id or slug)"""
+  """Return a single property by required term (property id)"""
   property(term: String!): Property!
+
+  """Return a single property by required slug (property id or slug)"""
+  propertyBySlug(slug: String!): Property
+
+  """
+  Search properties by term (title, description, place) and pagination params
+  """
+  searchProperties(paginationDto: PaginationDto!, term: String!): PropertiesDataResponse!
 }
 
 input PaginationDto {
   limit: Int
   offset: Int
   order: String
+}
+
+input PropertyFilterInput {
+  place: String
+  type: PropertyType
+  status: PropertyStatus
+  num_bathrooms: Int
+  num_bedrooms: Int
+  num_parking_lot: Int
+  min_area: Float
+  max_area: Float
 }
 
 type Mutation {
@@ -334,20 +362,22 @@ input CreatePropertyInput {
   """
   place: String!
 
+  """Property place latitude"""
+  lat: Float!
+
+  """Property place longitude"""
+  long: Float!
+
   """
   Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420 
   """
   description: String!
 
-  """
-  Property's latitude (Google Maps). Example: "41.40338"
-  """
-  lat: Float
+  """Area in square meters of the property"""
+  area: Int!
 
-  """
-  Property's longitude (Google Maps). Example: "2.17403"
-  """
-  long: Float
+  """Property's price. Example: "125000.00". This field is required"""
+  price: Float!
 
   """
   Property's total bathrooms. Example: "2"
@@ -387,20 +417,22 @@ input UpdatePropertyInput {
   """
   place: String
 
+  """Property place latitude"""
+  lat: Float
+
+  """Property place longitude"""
+  long: Float
+
   """
   Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420 
   """
   description: String
 
-  """
-  Property's latitude (Google Maps). Example: "41.40338"
-  """
-  lat: Float
+  """Area in square meters of the property"""
+  area: Int
 
-  """
-  Property's longitude (Google Maps). Example: "2.17403"
-  """
-  long: Float
+  """Property's price. Example: "125000.00". This field is required"""
+  price: Float
 
   """
   Property's total bathrooms. Example: "2"

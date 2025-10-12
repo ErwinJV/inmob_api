@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, ILike, Repository } from 'typeorm';
 
 import { CommonService } from 'src/common/common.service';
 import { CreatePropertyInput } from './dto/create-property.input';
@@ -15,6 +15,10 @@ import { User } from 'src/users/entities/user.entity';
 import { PropertiesDataResponse } from './types/PropertiesDataResponse.type';
 import { CreatePropertyFileInput } from './dto/create-property-file.input';
 import { PropertyImage } from './entities/property-image.entity';
+import { PropertyFilterInput } from './dto/property-filter.input';
+import { PropertyVideo } from './entities/property-video.entity';
+import { PropertyImage360 } from './entities/property-image-360';
+import { PropertyVirtualTour } from './entities/property-virtual-tour';
 
 @Injectable()
 export class PropertyService {
@@ -120,6 +124,20 @@ export class PropertyService {
     }
   }
 
+  async findOneBySlug(slug: string) {
+    try {
+      const property = await this.propertyRepository.findOne({
+        where: {
+          slug,
+        },
+      });
+
+      return property;
+    } catch (error) {
+      this.commonService.handleExceptions(error);
+    }
+  }
+
   async update(id: string, updatePropertyInput: UpdatePropertyInput) {
     try {
       await this.findOne(id);
@@ -168,21 +186,58 @@ export class PropertyService {
   async uploadFile(
     createPropertyFileInput: CreatePropertyFileInput,
     file: Express.Multer.File,
-  ): Promise<PropertyImage | undefined> {
+  ): Promise<
+    | PropertyImage
+    | PropertyVideo
+    | PropertyImage360
+    | PropertyVirtualTour
+    | undefined
+  > {
     try {
       const FILE_SERVER_SERVICE_URL = process.env[
         'FILE_SERVER_SERVICE_URL'
       ] as string;
       const fileName = await this.sendFile(createPropertyFileInput, file);
-      const { property_id } = createPropertyFileInput;
+      const { property_id, fileType } = createPropertyFileInput;
       const property = await this.findOne(property_id);
 
-      const image = this.propertyImageRepository.create({
-        property,
-        url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
-      });
+      if (fileType === 'image360') {
+        const image360 = this.propertyImageRepository.create({
+          property,
+          url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
+        });
 
-      return await this.propertyImageRepository.save(image);
+        return await this.propertyImageRepository.save(image360);
+      }
+
+      if (fileType === 'video') {
+        const video = this.propertyImageRepository.create({
+          property,
+          url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
+        });
+
+        return await this.propertyImageRepository.save(video);
+      }
+
+      if (fileType === 'image') {
+        const image = this.propertyImageRepository.create({
+          property,
+          url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
+        });
+
+        return await this.propertyImageRepository.save(image);
+      }
+
+      if (fileType === 'virtualTour') {
+        const virtualTour = this.propertyImageRepository.create({
+          property,
+          url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
+        });
+
+        return await this.propertyImageRepository.save(virtualTour);
+      }
+
+      throw new BadRequestException(`File type not supported`);
     } catch (error) {
       this.commonService.handleExceptions(error);
     }
@@ -229,7 +284,7 @@ export class PropertyService {
     ] as string;
     const formData = new FormData();
     const { property_id } = createPropertyFileInput;
-    const blob = new Blob([file.buffer], { type: file.mimetype });
+    const blob = new Blob([file.buffer as BlobPart], { type: file.mimetype });
     formData.append('file', blob);
     formData.append('entity', 'properties');
     formData.append('entityID', property_id);
@@ -244,5 +299,122 @@ export class PropertyService {
     };
 
     return fileName;
+  }
+
+  async filterProperties(
+    paginationDto: PaginationDto,
+    filters: PropertyFilterInput,
+  ): Promise<{ total: number; properties: Property[] }> {
+    const { limit, offset, order = 'created_at' } = paginationDto;
+
+    console.log({ filters, paginationDto });
+
+    // Verificar si hay filtros activos
+    const hasActiveFilters = Object.values(filters).some(
+      (value) => value !== null && value !== undefined && value !== 0,
+    );
+
+    // Caso especial: sin filtros
+    if (!hasActiveFilters) {
+      console.log('No filters applied, returning all properties');
+      const [properties, total] = await this.propertyRepository.findAndCount({
+        take: limit || 10,
+        skip: offset || 0,
+        order: { [order || 'created_at']: 'DESC' },
+        relations: ['images'],
+      });
+
+      return { total, properties };
+    }
+
+    // Aplicar filtros normales
+    const whereConditions: Record<string, unknown> = {};
+
+    if (filters.place) {
+      whereConditions.place = ILike(`%${filters.place}%`);
+    }
+    if (filters.type) {
+      whereConditions.type = filters.type;
+    }
+    if (filters.status) {
+      whereConditions.status = filters.status;
+    }
+    if (filters.num_bathrooms !== undefined && filters.num_bathrooms !== 0) {
+      whereConditions.num_bathrooms = filters.num_bathrooms;
+    }
+    if (filters.num_bedrooms !== undefined && filters.num_bedrooms !== 0) {
+      whereConditions.num_bedrooms = filters.num_bedrooms;
+    }
+    if (
+      filters.num_parking_lot !== undefined &&
+      filters.num_parking_lot !== 0
+    ) {
+      whereConditions.num_parking_lot = filters.num_parking_lot;
+    }
+
+    // Filtro por rango de área
+    if (filters.min_area !== null || filters.max_area !== null) {
+      if (filters.min_area !== null && filters.max_area !== null) {
+        whereConditions.area = Between(filters.min_area, filters.max_area);
+      } else if (filters.min_area !== null) {
+        whereConditions.area = Between(filters.min_area, 2147483647);
+      } else if (filters.max_area !== null) {
+        whereConditions.area = Between(0, filters.max_area);
+      }
+    }
+
+    const [properties, total] = await this.propertyRepository.findAndCount({
+      where: whereConditions,
+      take: limit || 10,
+      skip: offset || 0,
+      order: { [order || 'created_at']: 'DESC' },
+      relations: ['images'],
+    });
+    console.log({ total, properties });
+    return { total, properties };
+  }
+  async searchProperties(
+    term: string,
+    paginationDto: PaginationDto,
+  ): Promise<PropertiesDataResponse | undefined> {
+    const { limit = 10, offset = 0, order = 'DESC' } = paginationDto;
+
+    if (!term || term.trim().length === 0) {
+      throw new BadRequestException(
+        'El término de búsqueda no puede estar vacío',
+      );
+    }
+
+    try {
+      // Crear el patrón de búsqueda
+      const searchPattern = `%${term}%`;
+
+      // Buscar propiedades usando el operador ILike
+      const [properties, total] = await this.propertyRepository.findAndCount({
+        where: [
+          { title: ILike(searchPattern) },
+          { description: ILike(searchPattern) },
+          { place: ILike(searchPattern) },
+        ],
+        order: {
+          created_at: order === 'DESC' ? 'DESC' : 'ASC',
+        },
+        take: limit,
+        skip: offset,
+      });
+
+      if (!properties || properties.length === 0) {
+        throw new NotFoundException(
+          `No se encontraron propiedades que coincidan con: ${term}`,
+        );
+      }
+
+      return {
+        properties,
+        total,
+      };
+    } catch (error) {
+      this.commonService.handleExceptions(error);
+    }
   }
 }

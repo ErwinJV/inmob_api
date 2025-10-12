@@ -6,4 +6,7 @@ export class CreatePropertyFileInput {
   @IsUUID()
   @IsString()
   property_id: string;
+
+  @IsString()
+  fileType: 'image' | 'video' | 'image360' | 'virtualTour';
 }

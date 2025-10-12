@@ -23,7 +23,7 @@ export class PropertyController {
   constructor(private readonly propertyService: PropertyService) {}
 
   @Post('upload-file')
-  @RoleProtected(ValidRoles.ADMIN, ValidRoles.EDITOR)
+  @RoleProtected(ValidRoles.ADMIN, ValidRoles.EDITOR, ValidRoles.USER)
   @UseGuards(AuthGuard(), UserRoleGuard)
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
