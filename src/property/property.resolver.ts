@@ -23,6 +23,7 @@ import { UsersService } from 'src/users/users.service';
 import { PropertiesDataResponse } from './types/PropertiesDataResponse.type';
 
 import { PropertyUpdateResponse } from './types/PropertyUpdateResponse.type';
+import { PropertyFilterInput } from './dto/property-filter.input';
 
 @Resolver(() => Property)
 export class PropertyResolver {
@@ -54,13 +55,31 @@ export class PropertyResolver {
     return await this.propertyService.findAll(paginationDto);
   }
 
+  @Query(() => PropertiesDataResponse, { name: 'filterProperties' })
+  async filterProperties(
+    @Args('paginationDto') paginationDto: PaginationDto,
+    @Args('filters', { type: () => PropertyFilterInput, nullable: true })
+    filters?: PropertyFilterInput,
+  ) {
+    return this.propertyService.filterProperties(paginationDto, filters || {});
+  }
+
   @Query(() => Property, {
     name: 'property',
-    description:
-      'Return a single property by required term (property id or slug)',
+    description: 'Return a single property by required term (property id)',
   })
   findOne(@Args('term', { type: () => String }) term: string) {
     return this.propertyService.findOne(term);
+  }
+
+  @Query(() => Property, {
+    name: 'propertyBySlug',
+    nullable: true,
+    description:
+      'Return a single property by required slug (property id or slug)',
+  })
+  findOneBySlug(@Args('slug', { type: () => String }) slug: string) {
+    return this.propertyService.findOneBySlug(slug);
   }
 
   @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
@@ -103,6 +122,18 @@ export class PropertyResolver {
       user,
       input.properties,
     );
+  }
+
+  @Query(() => PropertiesDataResponse, {
+    name: 'searchProperties',
+    description:
+      'Search properties by term (title, description, place) and pagination params',
+  })
+  async searchProperties(
+    @Args('paginationDto') paginationDto: PaginationDto,
+    @Args('term') term: string,
+  ): Promise<PropertiesDataResponse | undefined> {
+    return await this.propertyService.searchProperties(term, paginationDto);
   }
 
   @ResolveField(() => User)

@@ -10,6 +10,9 @@ import {
 import { PropertyType } from '../enums/property-type.enum';
 import { PropertyStatus } from '../enums/property-status.enum';
 import { PropertyImage } from './property-image.entity';
+import { PropertyVideo } from './property-video.entity';
+import { PropertyImage360 } from './property-image-360';
+import { PropertyVirtualTour } from './property-virtual-tour';
 
 @Entity()
 @ObjectType()
@@ -32,6 +35,12 @@ export class Property {
   @Column({ type: 'varchar', length: 125, unique: true })
   slug: string;
 
+  @Field(() => Int, {
+    description: 'Area in square meters of the property',
+  })
+  @Column({ type: 'int' })
+  area: number;
+
   @Field(() => PropertyStatus, {
     description: `Property's status. Example: "SALE"`,
   })
@@ -49,6 +58,12 @@ export class Property {
   })
   @Column({ type: 'varchar', length: 1200 })
   description: string;
+
+  @Field(() => Float, {
+    description: `Property's price. Example: "125000.00"`,
+  })
+  @Column({ type: 'float' })
+  price: number;
 
   @Field(() => String, {
     description: `Property's user id creator. Example: "1b8800a2-2385-403a-893b-3eba76ba4608" `,
@@ -130,4 +145,33 @@ export class Property {
     eager: true,
   })
   images?: PropertyImage[];
+
+  @Field(() => [PropertyImage360], { nullable: true })
+  @OneToMany(
+    () => PropertyImage360,
+    (propertyImage360) => propertyImage360.property,
+    {
+      cascade: true,
+      eager: true,
+    },
+  )
+  images360?: PropertyImage360[];
+
+  @Field(() => [PropertyVideo], { nullable: true })
+  @OneToMany(() => PropertyVideo, (propertyVideo) => propertyVideo.property, {
+    cascade: true,
+    eager: true,
+  })
+  videos?: PropertyVideo[];
+
+  @Field(() => [PropertyVirtualTour], { nullable: true })
+  @OneToMany(
+    () => PropertyVirtualTour,
+    (propertyVirtualTour) => propertyVirtualTour.property,
+    {
+      cascade: true,
+      eager: true,
+    },
+  )
+  virtualTour?: PropertyVirtualTour[];
 }

@@ -4,7 +4,9 @@ import {
   IsInt,
   IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
+  Max,
   MaxLength,
 } from 'class-validator';
 import { PropertyType } from '../enums/property-type.enum';
@@ -38,6 +40,16 @@ export class CreatePropertyInput {
   @MaxLength(125)
   place: string;
 
+  @Field(() => Float, { description: 'Property place latitude' })
+  @IsNumber()
+  @IsOptional()
+  lat?: number;
+
+  @Field(() => Float, { description: 'Property place longitude' })
+  @IsNumber()
+  @IsOptional()
+  long?: number;
+
   @Field(() => String, {
     description: `Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420 `,
   })
@@ -45,21 +57,19 @@ export class CreatePropertyInput {
   @MaxLength(420)
   description: string;
 
-  @Field(() => Float, {
-    description: `Property's latitude (Google Maps). Example: "41.40338"`,
-    nullable: true,
+  @Field(() => Int, {
+    description: 'Area in square meters of the property',
   })
   @IsNumber()
-  @IsOptional()
-  lat?: number;
+  @IsPositive()
+  @Max(5)
+  area: number;
 
   @Field(() => Float, {
-    description: `Property's longitude (Google Maps). Example: "2.17403"`,
-    nullable: true,
+    description: `Property's price. Example: "125000.00". This field is required`,
   })
   @IsNumber()
-  @IsOptional()
-  long?: number;
+  price: number;
 
   @Field(() => Int, {
     description: `Property's total bathrooms. Example: "2"`,
