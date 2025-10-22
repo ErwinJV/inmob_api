@@ -12,6 +12,9 @@ import { PropertyController } from './property.controller';
 import { FilesModule } from 'src/files/files.module';
 import { PropertyImage } from './entities/property-image.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { PropertyVideo } from './entities/property-video.entity';
+import { PropertyImage360 } from './entities/property-image-360';
+import { PropertyVirtualTour } from './entities/property-virtual-tour';
 
 registerEnumType(PropertyType, {
   name: 'PropertyType',
@@ -27,6 +30,9 @@ registerEnumType(PropertyStatus, {
   imports: [
     TypeOrmModule.forFeature([Property]),
     TypeOrmModule.forFeature([PropertyImage]),
+    TypeOrmModule.forFeature([PropertyVideo]),
+    TypeOrmModule.forFeature([PropertyImage360]),
+    TypeOrmModule.forFeature([PropertyVirtualTour]),
     CommonModule,
     UsersModule,
     FilesModule,

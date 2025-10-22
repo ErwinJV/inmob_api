@@ -23,8 +23,8 @@ export class PropertyFilterInput {
   num_parking_lot?: number;
 
   @Field(() => Float, { nullable: true })
-  min_area?: number;
+  min_area?: number | null;
 
   @Field(() => Float, { nullable: true })
-  max_area?: number;
+  max_area?: number | null;
 }

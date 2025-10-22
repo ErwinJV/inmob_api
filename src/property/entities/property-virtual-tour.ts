@@ -10,7 +10,7 @@ export class PropertyVirtualTour {
   id: string;
 
   @Field(() => Property)
-  @ManyToOne(() => Property, (property) => property.images, {
+  @ManyToOne(() => Property, (property) => property.virtualTour, {
     onDelete: 'CASCADE',
     nullable: true,
   })

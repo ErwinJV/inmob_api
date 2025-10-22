@@ -10,7 +10,7 @@ export class PropertyVideo {
   id: string;
 
   @Field(() => Property)
-  @ManyToOne(() => Property, (property) => property.images, {
+  @ManyToOne(() => Property, (property) => property.videos, {
     onDelete: 'CASCADE',
     nullable: true,
   })

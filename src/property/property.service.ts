@@ -19,6 +19,7 @@ import { PropertyFilterInput } from './dto/property-filter.input';
 import { PropertyVideo } from './entities/property-video.entity';
 import { PropertyImage360 } from './entities/property-image-360';
 import { PropertyVirtualTour } from './entities/property-virtual-tour';
+import { UploadTestFileInput } from './dto/upload-test-file.input';
 
 @Injectable()
 export class PropertyService {
@@ -27,6 +28,10 @@ export class PropertyService {
     private readonly propertyRepository: Repository<Property>,
     @InjectRepository(PropertyImage)
     private readonly propertyImageRepository: Repository<PropertyImage>,
+    @InjectRepository(PropertyVideo)
+    private readonly propertyVideoRepository: Repository<PropertyVideo>,
+    @InjectRepository(PropertyImage360)
+    private readonly propertyImage360Repository: Repository<PropertyImage360>,
     private readonly commonService: CommonService,
   ) {}
 
@@ -202,21 +207,21 @@ export class PropertyService {
       const property = await this.findOne(property_id);
 
       if (fileType === 'image360') {
-        const image360 = this.propertyImageRepository.create({
+        const image360 = this.propertyImage360Repository.create({
           property,
           url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
         });
 
-        return await this.propertyImageRepository.save(image360);
+        return await this.propertyImage360Repository.save(image360);
       }
 
       if (fileType === 'video') {
-        const video = this.propertyImageRepository.create({
+        const video = this.propertyVideoRepository.create({
           property,
           url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
         });
 
-        return await this.propertyImageRepository.save(video);
+        return await this.propertyVideoRepository.save(video);
       }
 
       if (fileType === 'image') {
@@ -228,14 +233,14 @@ export class PropertyService {
         return await this.propertyImageRepository.save(image);
       }
 
-      if (fileType === 'virtualTour') {
-        const virtualTour = this.propertyImageRepository.create({
-          property,
-          url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
-        });
+      // if (fileType === 'virtualTour') {
+      //   const virtualTour = this.propertyImageRepository.create({
+      //     property,
+      //     url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
+      //   });
 
-        return await this.propertyImageRepository.save(virtualTour);
-      }
+      //   return await this.propertyImageRepository.save(virtualTour);
+      // }
 
       throw new BadRequestException(`File type not supported`);
     } catch (error) {
@@ -301,6 +306,64 @@ export class PropertyService {
     return fileName;
   }
 
+  async uploadTestFile(
+    uploadTestFileInput: UploadTestFileInput,
+    files: Express.Multer.File[],
+  ): Promise<
+    Array<PropertyImage | PropertyVideo | PropertyImage360> | undefined
+  > {
+    try {
+      const results: Array<PropertyImage | PropertyVideo | PropertyImage360> =
+        [];
+
+      for (const file of files) {
+        // Convertir UploadTestFileInput a CreatePropertyFileInput
+        const createPropertyFileInput: CreatePropertyFileInput = {
+          property_id: uploadTestFileInput.property_id,
+          fileType: uploadTestFileInput.fileType,
+        };
+
+        // Validar tipo de archivo antes de procesar
+        if (
+          !this.isValidFileType(uploadTestFileInput.fileType, file.mimetype)
+        ) {
+          throw new BadRequestException(
+            `Invalid file type for ${uploadTestFileInput.fileType}. File: ${file.originalname}`,
+          );
+        }
+
+        // Reutilizar la función uploadFile original para cada archivo
+        const result = await this.uploadFile(createPropertyFileInput, file);
+        if (result) {
+          results.push(result);
+        }
+      }
+
+      return results;
+    } catch (error) {
+      this.commonService.handleExceptions(error);
+    }
+  }
+
+  private generateFileName(originalName: string, fileType: string): string {
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    const extension = originalName.split('.').pop();
+    return `${fileType}_${timestamp}_${randomString}.${extension}`;
+  }
+
+  isValidFileType(fileType: string, mimeType: string): boolean {
+    const validMimeTypes: Record<string, string[]> = {
+      image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      video: ['video/mp4', 'video/avi', 'video/mov', 'video/wmv'],
+      image360: ['image/jpeg', 'image/png'],
+    };
+
+    console.log({ fileType });
+
+    return validMimeTypes[fileType]?.includes(mimeType) || false;
+  }
+
   async filterProperties(
     paginationDto: PaginationDto,
     filters: PropertyFilterInput,
@@ -309,10 +372,19 @@ export class PropertyService {
 
     console.log({ filters, paginationDto });
 
-    // Verificar si hay filtros activos
-    const hasActiveFilters = Object.values(filters).some(
-      (value) => value !== null && value !== undefined && value !== 0,
-    );
+    // Verificar si hay filtros activos - CORREGIDO
+    const hasActiveFilters =
+      (filters.place !== undefined &&
+        filters.place !== null &&
+        filters.place !== '') ||
+      (filters.type !== undefined && filters.type !== null) ||
+      (filters.status !== undefined && filters.status !== null) ||
+      (filters.num_bathrooms !== undefined && filters.num_bathrooms !== 0) ||
+      (filters.num_bedrooms !== undefined && filters.num_bedrooms !== 0) ||
+      (filters.num_parking_lot !== undefined &&
+        filters.num_parking_lot !== 0) ||
+      (filters.min_area !== undefined && filters.min_area !== null) ||
+      (filters.max_area !== undefined && filters.max_area !== null);
 
     // Caso especial: sin filtros
     if (!hasActiveFilters) {
@@ -352,16 +424,24 @@ export class PropertyService {
       whereConditions.num_parking_lot = filters.num_parking_lot;
     }
 
-    // Filtro por rango de área
-    if (filters.min_area !== null || filters.max_area !== null) {
-      if (filters.min_area !== null && filters.max_area !== null) {
-        whereConditions.area = Between(filters.min_area, filters.max_area);
-      } else if (filters.min_area !== null) {
-        whereConditions.area = Between(filters.min_area, 2147483647);
-      } else if (filters.max_area !== null) {
-        whereConditions.area = Between(0, filters.max_area);
-      }
+    // Filtro por rango de área - CORREGIDO
+    if (
+      (filters.min_area !== undefined && filters.min_area !== null) ||
+      (filters.max_area !== undefined && filters.max_area !== null)
+    ) {
+      const minArea =
+        filters.min_area !== null && filters.min_area !== undefined
+          ? filters.min_area
+          : 0;
+      const maxArea =
+        filters.max_area !== null && filters.max_area !== undefined
+          ? filters.max_area
+          : 2147483647;
+
+      whereConditions.area = Between(minArea, maxArea);
     }
+
+    console.log('WHERE CONDITIONS:', whereConditions); // Para debug
 
     const [properties, total] = await this.propertyRepository.findAndCount({
       where: whereConditions,
@@ -370,9 +450,11 @@ export class PropertyService {
       order: { [order || 'created_at']: 'DESC' },
       relations: ['images'],
     });
+
     console.log({ total, properties });
     return { total, properties };
   }
+
   async searchProperties(
     term: string,
     paginationDto: PaginationDto,
