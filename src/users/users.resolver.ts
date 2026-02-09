@@ -13,7 +13,7 @@ import { UserUpdateResponse } from './types/UserUpdateResponse.type';
 export class UsersResolver {
   constructor(private readonly usersService: UsersService) {}
 
-  @Auth(ValidRoles.ADMIN)
+  //@Auth(ValidRoles.ADMIN)
   @Mutation(() => User, {
     name: 'createUser',
     description:
