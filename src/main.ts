@@ -5,11 +5,12 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: process.env.AUTHORIZED_FRONTEND_DOMAIN,
+    // origin: process.env.AUTHORIZED_FRONTEND_DOMAIN,
     credentials: true,
   });
 
-  // app.useGlobalPipes(
+  // app.useGloba
+  // lPipes(
   //   new ValidationPipe({
   //     whitelist: true,
   //     forbidNonWhitelisted: true,

@@ -24,14 +24,18 @@ import { PromptAiModule } from './prompt-ai/prompt-ai.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      database: process.env['DB_NAME'],
-      host: process.env['DB_HOST'],
-      port: process.env['DB_PORT'] as unknown as number,
-      password: process.env['DB_PASSWORD'],
-      username: process.env['DB_USERNAME'],
+      url: process.env.DATABASE_URL,
       entities: [__dirname + '/**/*/.entity.{.ts,.js}'],
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: process.env.NODE_ENV !== 'production',
+      retryDelay: 3000,
+      retryAttempts: 10,
+      ssl: true,
+      extra: {
+        options: process.env.DB_ENDPOINT_ID
+          ? `project=${process.env.DB_ENDPOINT_ID}`
+          : 'project=ep-wispy-tooth-ahdjh5gr',
+      },
     }),
     UsersModule,
     AuthModule,
