@@ -63,5 +63,6 @@ export class UsersResolver {
   })
   async removeUser(@Args('id', { type: () => String }) id: string) {
     return await this.usersService.remove(id);
+    /* Test deploy Railway */
   }
 }
