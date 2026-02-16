@@ -5,6 +5,9 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.11.0"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
@@ -21,6 +24,7 @@
   },
   "dependencies": {
     "@apollo/server": "^4.11.3",
+    "@as-integrations/express5": "^1.1.2",
     "@google/generative-ai": "^0.24.1",
     "@nestjs/apollo": "^13.0.4",
     "@nestjs/common": "^11.0.1",
@@ -91,6 +95,8 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node""engines": {
+      "node": ">=18.0.0"
+    }
   }
 }
