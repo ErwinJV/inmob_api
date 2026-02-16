@@ -38,4 +38,12 @@ export class CreateUserInput {
   @IsString({ each: true })
   @IsOptional()
   roles?: string[];
+
+  @Field(() => String, {
+    description: `User's profile picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional`,
+    nullable: true,
+  })
+  @IsString()
+  @IsOptional()
+  profile_picture_url?: string;
 }

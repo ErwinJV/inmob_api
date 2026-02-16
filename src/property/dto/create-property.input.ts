@@ -102,4 +102,12 @@ export class CreatePropertyInput {
   @IsOptional()
   @IsInt()
   num_parking_lot?: number;
+
+  @Field(() => String, {
+    description: `Property's main picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional`,
+    nullable: true,
+  })
+  @IsString()
+  @IsOptional()
+  main_picture_url?: string;
 }

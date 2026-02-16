@@ -29,6 +29,7 @@ export class AuthService {
       email: user.email,
       roles: user.roles,
       is_active: user.is_active,
+      profile_picture_url: user.profile_picture_url,
     };
 
     return {

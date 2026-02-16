@@ -15,6 +15,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { PropertyVideo } from './entities/property-video.entity';
 import { PropertyImage360 } from './entities/property-image-360';
 import { PropertyVirtualTour } from './entities/property-virtual-tour';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 
 registerEnumType(PropertyType, {
   name: 'PropertyType',
@@ -37,6 +38,7 @@ registerEnumType(PropertyStatus, {
     UsersModule,
     FilesModule,
     AuthModule,
+    CloudinaryModule,
   ],
   providers: [PropertyResolver, PropertyService],
   exports: [PropertyService],

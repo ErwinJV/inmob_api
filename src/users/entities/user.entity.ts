@@ -41,6 +41,13 @@ export class User {
   @Column({ type: 'varchar', array: true, default: ['USER'] })
   roles: string[];
 
+  @Field(() => String, {
+    description: `User's profile picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg"`,
+    nullable: true,
+  })
+  @Column({ type: 'varchar', length: 300, nullable: true })
+  profile_picture_url?: string;
+
   @Field(() => Number, {
     description: `Users's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"`,
   })

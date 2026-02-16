@@ -123,6 +123,11 @@ type Property {
   images360: [PropertyImage360!]
   videos: [PropertyVideo!]
   virtualTour: [PropertyVirtualTour!]
+
+  """
+  Property's main picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
+  """
+  main_picture_url: String
 }
 
 """Status of property"""
@@ -170,6 +175,11 @@ type User {
   roles: [String!]!
 
   """
+  User's profile picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg"
+  """
+  profile_picture_url: String
+
+  """
   Users's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
   """
   created_at: Float!
@@ -181,6 +191,17 @@ type User {
 
   """Array that contains Properties created by the user"""
   properties: [Property!]
+}
+
+type AuthResponse {
+  """
+  Bearer token response, add this in your header request for several requests
+  """
+  access_token: String!
+}
+
+type AuthVerificationResponse {
+  verification: Boolean!
 }
 
 type UsersDataResponse {
@@ -195,17 +216,6 @@ type UsersDataResponse {
 
 type UserUpdateResponse {
   affected: Int
-}
-
-type AuthResponse {
-  """
-  Bearer token response, add this in your header request for several requests
-  """
-  access_token: String!
-}
-
-type AuthVerificationResponse {
-  verification: Boolean!
 }
 
 type PropertiesDataResponse {
@@ -323,6 +333,11 @@ input CreateUserInput {
   User's roles, example: "['ADMIN',"USER']". This value is optional | If no value is provided, its default value will be "['USER']"
   """
   roles: [String!]
+
+  """
+  User's profile picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
+  """
+  profile_picture_url: String
 }
 
 input UpdateUserInput {
@@ -350,6 +365,11 @@ input UpdateUserInput {
   User's roles, example: "['ADMIN',"USER']". This value is optional | If no value is provided, its default value will be "['USER']"
   """
   roles: [String!]
+
+  """
+  User's profile picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
+  """
+  profile_picture_url: String
 
   """
   User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695". This field is required
@@ -422,6 +442,11 @@ input CreatePropertyInput {
   Property's total parkings lot. Example: "2"
   """
   num_parking_lot: Int
+
+  """
+  Property's main picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
+  """
+  main_picture_url: String
 }
 
 input UpdatePropertyInput {
@@ -477,6 +502,11 @@ input UpdatePropertyInput {
   Property's total parkings lot. Example: "2"
   """
   num_parking_lot: Int
+
+  """
+  Property's main picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
+  """
+  main_picture_url: String
 
   """
   User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695". This field is required

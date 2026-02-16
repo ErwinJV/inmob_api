@@ -19,7 +19,7 @@ import { PropertyFilterInput } from './dto/property-filter.input';
 import { PropertyVideo } from './entities/property-video.entity';
 import { PropertyImage360 } from './entities/property-image-360';
 import { PropertyVirtualTour } from './entities/property-virtual-tour';
-import { UploadTestFileInput } from './dto/upload-test-file.input';
+// import { UploadTestFileInput } from './dto/upload-test-file.input';
 
 @Injectable()
 export class PropertyService {
@@ -155,6 +155,7 @@ export class PropertyService {
       this.commonService.handleExceptions(error);
     }
   }
+
   async remove(id: string) {
     try {
       const property = (await this.findOne(id)) as Property;
@@ -188,9 +189,9 @@ export class PropertyService {
     return await this.propertyRepository.count();
   }
 
-  async uploadFile(
+  async saveFileUrl(
     createPropertyFileInput: CreatePropertyFileInput,
-    file: Express.Multer.File,
+    url: string,
   ): Promise<
     | PropertyImage
     | PropertyVideo
@@ -199,17 +200,13 @@ export class PropertyService {
     | undefined
   > {
     try {
-      const FILE_SERVER_SERVICE_URL = process.env[
-        'FILE_SERVER_SERVICE_URL'
-      ] as string;
-      const fileName = await this.sendFile(createPropertyFileInput, file);
       const { property_id, fileType } = createPropertyFileInput;
       const property = await this.findOne(property_id);
 
       if (fileType === 'image360') {
         const image360 = this.propertyImage360Repository.create({
           property,
-          url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
+          url,
         });
 
         return await this.propertyImage360Repository.save(image360);
@@ -218,7 +215,7 @@ export class PropertyService {
       if (fileType === 'video') {
         const video = this.propertyVideoRepository.create({
           property,
-          url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
+          url,
         });
 
         return await this.propertyVideoRepository.save(video);
@@ -227,10 +224,16 @@ export class PropertyService {
       if (fileType === 'image') {
         const image = this.propertyImageRepository.create({
           property,
-          url: `${FILE_SERVER_SERVICE_URL}/uploads/properties/${property_id}/${fileName}`,
+          url,
         });
 
         return await this.propertyImageRepository.save(image);
+      }
+
+      if (fileType === 'main_picture_url') {
+        await this.propertyRepository.update(property_id, {
+          main_picture_url: url,
+        });
       }
 
       // if (fileType === 'virtualTour') {
@@ -249,108 +252,139 @@ export class PropertyService {
   }
 
   async deleteFile({
-    entity,
-    fileName,
+    fileType,
     id,
   }: {
-    entity: string;
+    fileType: CreatePropertyFileInput['fileType'];
     id: string;
-    fileName: string;
   }) {
     try {
-      const FILE_SERVER_SERVICE_URL = process.env[
-        'FILE_SERVER_SERVICE_URL'
-      ] as string;
-      const url = `${FILE_SERVER_SERVICE_URL}/uploads/${entity}/${id}/${fileName}`;
-      const deleteUrl = `${process.env['FILE_SERVER_SERVICE_URL']}/api/uploads/${entity}/${id}/${fileName}`;
-      await fetch(deleteUrl, {
-        method: 'delete',
-      });
-      const image = await this.propertyImageRepository.findOne({
-        where: { url },
-      });
-      if (!image) {
-        throw new NotFoundException(`Image not exists!`);
-      }
-      await this.propertyImageRepository.remove(image);
+      if (fileType === 'image360') {
+        const image360 = await this.propertyImage360Repository.findOne({
+          where: { id },
+        });
+        if (!image360) {
+          throw new NotFoundException(`Image 360 not exists!`);
+        }
+        await this.propertyImage360Repository.remove(image360);
 
-      return { msg: 'File deleted' };
+        return { url: image360.url };
+      }
+
+      if (fileType === 'video') {
+        const video = await this.propertyVideoRepository.findOne({
+          where: { id },
+        });
+        if (!video) {
+          throw new NotFoundException(`Video not exists!`);
+        }
+        await this.propertyVideoRepository.remove(video);
+
+        return { url: video.url };
+      }
+
+      if (fileType === 'image') {
+        const image = await this.propertyImageRepository.findOne({
+          where: { id },
+        });
+        if (!image) {
+          throw new NotFoundException(`Image not exists!`);
+        }
+        await this.propertyImageRepository.remove(image);
+
+        return { url: image.url };
+      }
+
+      if (fileType === 'main_picture_url') {
+        const property = await this.propertyRepository.findOne({
+          where: { id },
+        });
+        if (!property) {
+          throw new NotFoundException(`Property not exists!`);
+        }
+        const url = property.main_picture_url;
+        await this.propertyRepository.update(id, {
+          main_picture_url: undefined,
+        });
+
+        return { url };
+      }
     } catch (error) {
       this.commonService.handleExceptions(error);
     }
   }
 
-  private async sendFile(
-    createPropertyFileInput: CreatePropertyFileInput,
-    file: Express.Multer.File,
-  ): Promise<string> {
-    const FILE_SERVER_SERVICE_URL = process.env[
-      'FILE_SERVER_SERVICE_URL'
-    ] as string;
-    const formData = new FormData();
-    const { property_id } = createPropertyFileInput;
-    const blob = new Blob([file.buffer as BlobPart], { type: file.mimetype });
-    formData.append('file', blob);
-    formData.append('entity', 'properties');
-    formData.append('entityID', property_id);
+  // private async sendFile(
+  //   createPropertyFileInput: CreatePropertyFileInput,
+  //   file: Express.Multer.File,
+  // ): Promise<string> {
+  //   const FILE_SERVER_SERVICE_URL = process.env[
+  //     'FILE_SERVER_SERVICE_URL'
+  //   ] as string;
+  //   const formData = new FormData();
+  //   const { property_id } = createPropertyFileInput;
+  //   const blob = new Blob([file.buffer as BlobPart], { type: file.mimetype });
+  //   formData.append('file', blob);
+  //   formData.append('entity', 'properties');
+  //   formData.append('entityID', property_id);
 
-    const response = await fetch(`${FILE_SERVER_SERVICE_URL}/api/uploads/`, {
-      body: formData,
-      method: 'post',
-    });
+  //   const response = await fetch(`${FILE_SERVER_SERVICE_URL}/api/uploads/`, {
+  //     body: formData,
+  //     method: 'post',
+  //   });
 
-    const { fileName } = (await response.json()) as unknown as {
-      fileName: string;
-    };
+  //   const { fileName } = (await response.json()) as unknown as {
+  //     fileName: string;
+  //   };
 
-    return fileName;
-  }
+  //   return fileName;
+  // }
 
-  async uploadTestFile(
-    uploadTestFileInput: UploadTestFileInput,
-    files: Express.Multer.File[],
-  ): Promise<
-    Array<PropertyImage | PropertyVideo | PropertyImage360> | undefined
-  > {
-    try {
-      const results: Array<PropertyImage | PropertyVideo | PropertyImage360> =
-        [];
+  // async uploadTestFile(
+  //   uploadTestFileInput: UploadTestFileInput,
+  //   files: Express.Multer.File[],
+  // ): Promise<
+  //   Array<PropertyImage | PropertyVideo | PropertyImage360> | undefined
+  // > {
+  //   try {
+  //     const results: Array<PropertyImage | PropertyVideo | PropertyImage360> =
+  //       [];
 
-      for (const file of files) {
-        // Convertir UploadTestFileInput a CreatePropertyFileInput
-        const createPropertyFileInput: CreatePropertyFileInput = {
-          property_id: uploadTestFileInput.property_id,
-          fileType: uploadTestFileInput.fileType,
-        };
+  //     for (const file of files) {
+  //       // Convertir UploadTestFileInput a CreatePropertyFileInput
+  //       const createPropertyFileInput: CreatePropertyFileInput = {
+  //         property_id: uploadTestFileInput.property_id,
+  //         fileType: uploadTestFileInput.fileType,
+  //       };
 
-        // Validar tipo de archivo antes de procesar
-        if (
-          !this.isValidFileType(uploadTestFileInput.fileType, file.mimetype)
-        ) {
-          throw new BadRequestException(
-            `Invalid file type for ${uploadTestFileInput.fileType}. File: ${file.originalname}`,
-          );
-        }
+  //       // Validar tipo de archivo antes de procesar
+  //       if (
+  //         !this.isValidFileType(uploadTestFileInput.fileType, file.mimetype)
+  //       ) {
+  //         throw new BadRequestException(
+  //           `Invalid file type for ${uploadTestFileInput.fileType}. File: ${file.originalname}`,
+  //         );
+  //       }
 
-        // Reutilizar la función uploadFile original para cada archivo
-        const result = await this.uploadFile(createPropertyFileInput, file);
-        if (result) {
-          results.push(result);
-        }
-      }
+  //       // Reutilizar la función uploadFile original para cada archivo
+  //       const result = await this.uploadFile(createPropertyFileInput, file);
+  //       if (result) {
+  //         results.push(result);
+  //       }
+  //     }
 
-      return results;
-    } catch (error) {
-      this.commonService.handleExceptions(error);
-    }
-  }
+  //     return results;
+  //   } catch (error) {
+  //     this.commonService.handleExceptions(error);
+  //   }
+  // }
 
-  private generateFileName(originalName: string, fileType: string): string {
-    const timestamp = Date.now();
-    const randomString = Math.random().toString(36).substring(2, 15);
-    const extension = originalName.split('.').pop();
-    return `${fileType}_${timestamp}_${randomString}.${extension}`;
-  }
+  // private generateFileName(originalName: string, fileType: string): string {
+  //   const timestamp = Date.now();
+  //   const randomString = Math.random().toString(36).substring(2, 15);
+  //   const extension = originalName.split('.').pop();
+  //   return `${fileType}_${timestamp}_${randomString}.${extension}`;
+  // }
 
   isValidFileType(fileType: string, mimeType: string): boolean {
     const validMimeTypes: Record<string, string[]> = {
