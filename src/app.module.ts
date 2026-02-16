@@ -10,6 +10,7 @@ import { CommonModule } from './common/common.module';
 import { PropertyModule } from './property/property.module';
 import { FilesModule } from './files/files.module';
 import { PromptAiModule } from './prompt-ai/prompt-ai.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { PromptAiModule } from './prompt-ai/prompt-ai.module';
       url: process.env.DATABASE_URL,
       entities: [__dirname + '/**/*/.entity.{.ts,.js}'],
       autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV !== 'production',
+      synchronize: true,
       retryDelay: 3000,
       retryAttempts: 10,
       ssl: true,
@@ -43,6 +44,7 @@ import { PromptAiModule } from './prompt-ai/prompt-ai.module';
     PropertyModule,
     FilesModule,
     PromptAiModule,
+    CloudinaryModule,
   ],
   controllers: [],
   providers: [],

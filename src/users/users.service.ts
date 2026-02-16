@@ -78,6 +78,7 @@ export class UsersService {
           last_name: true,
           name: true,
           roles: true,
+          profile_picture_url: true,
         },
       });
 
@@ -120,10 +121,25 @@ export class UsersService {
   async update(id: string, updateUserInput: UpdateUserInput) {
     try {
       await this.findOne(id);
-      return await this.userRepository.update(id, {
-        ...updateUserInput,
-        updated_at: Date.now(),
-      });
+      if (updateUserInput.password && updateUserInput.password !== '') {
+        updateUserInput.password = await bcrypt.hash(
+          updateUserInput.password,
+          10,
+        );
+
+        return await this.userRepository.update(id, {
+          ...updateUserInput,
+          updated_at: Date.now(),
+        });
+      } else {
+        return await this.userRepository.update(id, {
+          email: updateUserInput.email,
+          name: updateUserInput.name,
+          last_name: updateUserInput.last_name,
+          roles: updateUserInput.roles,
+          updated_at: Date.now(),
+        });
+      }
     } catch (error) {
       this.commonService.handleExceptions(error);
     }

@@ -174,4 +174,11 @@ export class Property {
     },
   )
   virtualTour?: PropertyVirtualTour[];
+
+  @Field(() => String, {
+    description: `Property's main picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional`,
+    nullable: true,
+  })
+  @Column({ type: 'varchar', length: 300, nullable: true })
+  main_picture_url?: string;
 }

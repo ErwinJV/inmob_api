@@ -8,5 +8,5 @@ export class CreatePropertyFileInput {
   property_id: string;
 
   @IsString()
-  fileType: 'image' | 'video' | 'image360';
+  fileType: 'main_picture_url' | 'image360' | 'image' | 'video';
 }
