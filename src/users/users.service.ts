@@ -105,7 +105,7 @@ export class UsersService {
         skip: offset,
       });
 
-      if (!users || !users.length) {
+      if (!users.length && total === 0) {
         throw new NotFoundException('Users table are empty');
       }
 
