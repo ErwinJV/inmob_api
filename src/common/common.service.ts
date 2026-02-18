@@ -18,8 +18,8 @@ export class CommonService {
       throw error;
     }
 
-    if (!(error instanceof InternalServerErrorException)) {
-      throw new InternalServerErrorException(error);
+    if (error instanceof InternalServerErrorException) {
+      throw error;
     }
   }
 }

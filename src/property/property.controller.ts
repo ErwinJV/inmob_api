@@ -39,7 +39,8 @@ export class PropertyController {
       new ParseFilePipe({
         validators: [
           new FileTypeValidator({
-            fileType: 'image/jpeg|image/png|video/mp4',
+            fileType:
+              'image/jpeg|image/png|image/jpg|image/webp|video/mp4|video/webm',
           }),
         ],
       }),
