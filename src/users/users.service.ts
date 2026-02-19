@@ -151,7 +151,8 @@ export class UsersService {
       if (!user) {
         throw new NotFoundException(`User with ${id} not found`);
       }
-      return await this.userRepository.remove(user);
+      await this.userRepository.remove(user);
+      return { id: user.id };
     } catch (error) {
       this.commonService.handleExceptions(error);
     }

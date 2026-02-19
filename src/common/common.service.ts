@@ -19,7 +19,7 @@ export class CommonService {
     }
 
     if (error instanceof InternalServerErrorException) {
-      throw error;
+      throw new InternalServerErrorException(error.message);
     }
   }
 }
