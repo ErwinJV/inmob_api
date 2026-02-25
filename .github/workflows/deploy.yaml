@@ -20,6 +20,18 @@ jobs:
           script: |
             cd www/inmob_api 
             git pull origin main
+            echo "DB_HOST=${{ secrets.DB_HOST }}" > .env
+            echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+            echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
+            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            echo "PORT=${{ secrets.PORT }}" >> .env 
+            echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env 
+            echo "GOOGLE_GEMINI_AI_API_KEY=${{ secrets.GOOGLE_GEMINI_AI_API_KEY }}" >> .env 
+            echo "DB_ENDPOINT_ID=${{ secrets.DB_ENDPOINT_ID }}" >> .env 
+            echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env 
+            echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> .env 
+            echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}"
             npm install
             npm run build
             pm2 restart nombre-de-tu-app  # Reinicia la app con PM2
