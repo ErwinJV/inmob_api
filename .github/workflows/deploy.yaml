@@ -24,7 +24,7 @@ jobs:
             echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
             echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
             echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
             echo "PORT=${{ secrets.PORT }}" >> .env 
             echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env 
             echo "GOOGLE_GEMINI_AI_API_KEY=${{ secrets.GOOGLE_GEMINI_AI_API_KEY }}" >> .env 
