@@ -18,9 +18,6 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            source ~/.bashrc
-            set -e
-
             cd www/inmob_api 
             git pull origin main
             echo "DB_HOST=${{ secrets.DB_HOST }}" > .env
@@ -34,7 +31,10 @@ jobs:
             echo "DB_ENDPOINT_ID=${{ secrets.DB_ENDPOINT_ID }}" >> .env 
             echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> .env 
             echo "CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}" >> .env 
+
             echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}"
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             npm install
             npm run build
             pm2 restart openmcbo_aws_server || pm2 start dist/main.js --name openmcbo_aws_server
