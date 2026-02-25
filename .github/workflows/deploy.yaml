@@ -34,4 +34,4 @@ jobs:
             echo "CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}"
             npm install
             npm run build
-            pm2 restart nombre-de-tu-app  # Reinicia la app con PM2
+            pm2 restart openmcbo_aws_server || pm2 start dist/main.js --name openmcbo_aws_server
