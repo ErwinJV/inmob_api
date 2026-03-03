@@ -68,28 +68,24 @@ export class UsersService {
   }
 
   async findOne(id: string) {
-    try {
-      const user = await this.userRepository.findOne({
-        where: { id },
-        select: {
-          email: true,
-          id: true,
-          is_active: true,
-          last_name: true,
-          name: true,
-          roles: true,
-          profile_picture_url: true,
-        },
-      });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: {
+        email: true,
+        id: true,
+        is_active: true,
+        last_name: true,
+        name: true,
+        roles: true,
+        profile_picture_url: true,
+      },
+    });
 
-      if (!user) {
-        throw new NotFoundException(`User with id: ${id} not found`);
-      }
-
-      return user;
-    } catch (error) {
-      this.commonService.handleExceptions(error);
+    if (!user) {
+      throw new NotFoundException(`User with id: ${id} not found`);
     }
+
+    return user;
   }
 
   async findAll(
@@ -145,16 +141,15 @@ export class UsersService {
     }
   }
 
-  async remove(id: string) {
-    try {
-      const user = await this.findOne(id);
-      if (!user) {
-        throw new NotFoundException(`User with ${id} not found`);
-      }
-      await this.userRepository.remove(user);
-      return user;
-    } catch (error) {
-      this.commonService.handleExceptions(error);
+  async remove(id: string): Promise<User> {
+    const user = await this.findOne(id);
+
+    console.log({ user });
+    if (!user) {
+      throw new NotFoundException(`User with ${id} not found`);
     }
+    const response = await this.userRepository.remove(user);
+
+    return { ...response, id: user.id };
   }
 }
