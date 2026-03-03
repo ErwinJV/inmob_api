@@ -62,7 +62,7 @@ export class UsersResolver {
       'Remove a single user required by a required id (uuid), authorization bearer token is required in the header request',
   })
   async removeUser(@Args('id', { type: () => String }) id: string) {
-    return await this.usersService.remove(id);
+    return this.usersService.remove(id);
     /* Test deploy Railway */
   }
 }
