@@ -19,5 +19,5 @@ export class PaginationDto {
   @IsOptional()
   @IsString()
   @Field(() => String, { nullable: true })
-  order?: 'ASC' | 'DESC' | 'asc' | 'desc';
+  order?: 'ASC' | 'DESC';
 }
