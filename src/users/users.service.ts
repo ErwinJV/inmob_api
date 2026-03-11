@@ -143,6 +143,13 @@ export class UsersService {
     }
   }
 
+  async updateProfilePicture(id: string, profile_picture_url: string) {
+    return await this.userRepository.update(id, {
+      profile_picture_url,
+      updated_at: Date.now(),
+    });
+  }
+
   async remove(id: string): Promise<User> {
     const user = await this.findOne(id);
     if (!user) {

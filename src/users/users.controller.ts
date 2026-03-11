@@ -38,7 +38,7 @@ export class UsersController {
       new ParseFilePipe({
         validators: [
           new FileTypeValidator({
-            fileType: 'image/jpeg|image/png',
+            fileType: 'image/jpeg|image/png|image/jpg|image/webp',
           }),
         ],
       }),
@@ -50,16 +50,17 @@ export class UsersController {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { secure_url } = await this.cloudinaryService.uploadFile(file);
     const { user_id } = createUserFileInput;
+    console.log({ createUserFileInput });
     const user = await this.userService.findOne(user_id);
     if (!user)
       throw new BadRequestException(`User with id ${user_id} not found`);
-    if (user.profile_picture_url) {
-      await this.cloudinaryService.deleteFile(user.profile_picture_url);
-    }
-    return await this.userService.update(user_id, {
-      profile_picture_url: secure_url as unknown as string,
-      id: user_id,
-    });
+    // if (user.profile_picture_url) {
+    //   await this.cloudinaryService.deleteFile(user.profile_picture_url);
+    // }
+    return await this.userService.updateProfilePicture(
+      user_id,
+      secure_url as string,
+    );
   }
 
   @Delete('delete-file/:url')
