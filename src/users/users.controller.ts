@@ -57,6 +57,7 @@ export class UsersController {
     // if (user.profile_picture_url) {
     //   await this.cloudinaryService.deleteFile(user.profile_picture_url);
     // }
+    console.log('Secure_url: ', secure_url);
     return await this.userService.updateProfilePicture(
       user_id,
       secure_url as string,
