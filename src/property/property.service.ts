@@ -194,6 +194,26 @@ export class PropertyService {
   async remove(id: string) {
     try {
       const property = (await this.findOne(id)) as Property;
+      if (property.images?.length) {
+        const images = property.images;
+        for (const image of images) {
+          await this.propertyImageRepository.delete(image);
+        }
+      }
+
+      if (property.images360?.length) {
+        const images360 = property.images360;
+        for (const image360 of images360) {
+          await this.propertyImage360Repository.delete(image360);
+        }
+      }
+
+      if (property.videos?.length) {
+        const videos = property.videos;
+        for (const video of videos) {
+          await this.propertyVideoRepository.delete(video);
+        }
+      }
       const response = await this.propertyRepository.remove(property);
       console.log({ response });
       return response;

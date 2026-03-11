@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { PropertyService } from './property.service';
 import { PropertyResolver } from './property.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -35,7 +35,7 @@ registerEnumType(PropertyStatus, {
     TypeOrmModule.forFeature([PropertyImage360]),
     TypeOrmModule.forFeature([PropertyVirtualTour]),
     CommonModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
     FilesModule,
     AuthModule,
     CloudinaryModule,
