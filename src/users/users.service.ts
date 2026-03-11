@@ -145,15 +145,16 @@ export class UsersService {
 
   async remove(id: string): Promise<User> {
     const user = await this.findOne(id);
+    if (!user) {
+      throw new NotFoundException(`User with ${id} not found`);
+    }
     if (user.properties?.length) {
       const properties = user.properties;
       for (const property of properties) {
         await this.propertyService.remove(property.id);
       }
     }
-    if (!user) {
-      throw new NotFoundException(`User with ${id} not found`);
-    }
+
     const response = await this.userRepository.remove(user);
     response.id = user.id || '';
 

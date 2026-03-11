@@ -10,7 +10,7 @@ export class CloudinaryService {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
           resource_type: 'auto', // <--- ESTA LÍNEA ES LA CLAVE
-          folder: 'mis_videos', // Opcional: para organizar tus archivos
+          // Opcional: para organizar tus archivos
         },
         (error, result) => {
           if (error) {
