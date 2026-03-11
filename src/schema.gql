@@ -240,6 +240,9 @@ type Query {
 
   """Returns a paginated list of properties"""
   properties(paginationDto: PaginationDto!): PropertiesDataResponse!
+
+  """Returns a paginated list of properties """
+  propertiesDashboard(paginationDto: PaginationDto!): PropertiesDataResponse!
   filterProperties(paginationDto: PaginationDto!, filters: PropertyFilterInput): PropertiesDataResponse!
 
   """Return a single property by required term (property id)"""

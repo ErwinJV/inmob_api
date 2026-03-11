@@ -20,7 +20,7 @@ export class UsersResolver {
       'Create a user by createUserInput params, authorization bearer token is required in the header request',
   })
   createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
-    return this.usersService.create(createUserInput);
+    return this.usersService.create(createUserInput) as unknown as User;
   }
 
   @Auth(ValidRoles.ADMIN)
