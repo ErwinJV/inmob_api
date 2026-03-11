@@ -46,11 +46,11 @@ export class UsersController {
     file: Express.Multer.File,
   ) {
     if (!file) throw new BadRequestException(`File is undefined`);
-    console.log('Profile Photo: ', file);
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { secure_url } = await this.cloudinaryService.uploadFile(file);
     const { user_id } = createUserFileInput;
-    console.log({ createUserFileInput });
+
     const user = await this.userService.findOne(user_id);
     if (!user)
       throw new BadRequestException(`User with id ${user_id} not found`);
