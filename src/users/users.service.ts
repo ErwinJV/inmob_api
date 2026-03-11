@@ -13,6 +13,7 @@ import * as bcrypt from 'bcryptjs';
 import { CommonService } from 'src/common/common.service';
 import { PaginationDto } from 'src/common/dtos/paginator.dto';
 import { UsersDataResponse } from './types/UsersDataResponse.type';
+import { PropertyService } from 'src/property/property.service';
 
 @Injectable()
 export class UsersService {
@@ -20,6 +21,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly commonService: CommonService,
+    private readonly propertyService: PropertyService,
   ) {}
 
   async create(createUserInput: CreateUserInput) {
@@ -143,7 +145,12 @@ export class UsersService {
 
   async remove(id: string): Promise<User> {
     const user = await this.findOne(id);
-
+    if (user.properties?.length) {
+      const properties = user.properties;
+      for (const property of properties) {
+        await this.propertyService.remove(property.id);
+      }
+    }
     if (!user) {
       throw new NotFoundException(`User with ${id} not found`);
     }

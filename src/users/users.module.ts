@@ -10,6 +10,7 @@ import { UsersController } from './users.controller';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { UsersResolver } from './users.resolver';
+import { PropertyModule } from 'src/property/property.module';
 
 registerEnumType(ValidRoles, {
   name: 'ValidRoles',
@@ -20,6 +21,7 @@ registerEnumType(ValidRoles, {
   imports: [
     TypeOrmModule.forFeature([User]),
     CommonModule,
+    forwardRef(() => PropertyModule),
     CloudinaryModule,
     forwardRef(() => AuthModule),
   ],

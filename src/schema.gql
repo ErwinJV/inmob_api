@@ -237,7 +237,6 @@ type Query {
   Return a single user required by id (uuid), authorization bearer token is required in the header request
   """
   user(id: String!): User!
-  verifyAuthToken: AuthVerificationResponse!
 
   """Returns a paginated list of properties"""
   properties(paginationDto: PaginationDto!): PropertiesDataResponse!
@@ -253,6 +252,7 @@ type Query {
   Search properties by term (title, description, place) and pagination params
   """
   searchProperties(paginationDto: PaginationDto!, term: String!): PropertiesDataResponse!
+  verifyAuthToken: AuthVerificationResponse!
 }
 
 input PaginationDto {
@@ -287,7 +287,6 @@ type Mutation {
   Remove a single user required by a required id (uuid), authorization bearer token is required in the header request
   """
   removeUser(id: String!): User!
-  login(authInput: AuthInput!): AuthResponse!
 
   """
   Create a property by createPropertyInput params, authorization bearer token is required in the header request
@@ -306,6 +305,7 @@ type Mutation {
 
   """Creates a multiple fake properties for development testing"""
   createMultipleProperties(input: CreateMultiplePropertiesInput!): [Property!]!
+  login(authInput: AuthInput!): AuthResponse!
 }
 
 input CreateUserInput {
@@ -375,18 +375,6 @@ input UpdateUserInput {
   User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695". This field is required
   """
   id: String!
-}
-
-input AuthInput {
-  """
-  User's email, Example: "example@email.com". This field is required | Maximum character length of 25 | Must be unique
-  """
-  email: String!
-
-  """
-  User's password, Example: "Ghw~j'#>£F|A7FN=OS:6=/q27". This field is required | Maximum character length of 40
-  """
-  password: String!
 }
 
 input CreatePropertyInput {
@@ -516,4 +504,16 @@ input UpdatePropertyInput {
 
 input CreateMultiplePropertiesInput {
   properties: [CreatePropertyInput!]!
+}
+
+input AuthInput {
+  """
+  User's email, Example: "example@email.com". This field is required | Maximum character length of 25 | Must be unique
+  """
+  email: String!
+
+  """
+  User's password, Example: "Ghw~j'#>£F|A7FN=OS:6=/q27". This field is required | Maximum character length of 40
+  """
+  password: String!
 }
