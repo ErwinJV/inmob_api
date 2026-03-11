@@ -135,6 +135,35 @@ export class PropertyService {
       this.commonService.handleExceptions(error);
     }
   }
+  async findAllForDashboard(
+    paginationDto: PaginationDto,
+  ): Promise<PropertiesDataResponse | undefined> {
+    const { limit = 0, offset = 0, order = 'DESC' } = paginationDto;
+    try {
+      const total = await this.propertyRepository.count();
+      const properties = await this.propertyRepository.find({
+        order: {
+          id: {
+            direction: order,
+          },
+        },
+        take: limit,
+        skip: offset,
+      });
+
+      if (!properties || properties.length === 0) {
+        throw new NotFoundException('Properties table are empty');
+      }
+
+      return {
+        properties: properties,
+        total,
+      };
+    } catch (error) {
+      this.commonService.handleExceptions(error);
+    }
+  }
+
   async findOne(term: string) {
     let property: Property | null;
     try {

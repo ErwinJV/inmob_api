@@ -55,6 +55,17 @@ export class PropertyResolver {
     return await this.propertyService.findAll(paginationDto);
   }
 
+  // @Auth(ValidRoles.ADMIN)
+  @Query(() => PropertiesDataResponse, {
+    name: 'propertiesDashboard',
+    description: 'Returns a paginated list of properties ',
+  })
+  async findAllDashboard(
+    @Args('paginationDto') paginationDto: PaginationDto,
+  ): Promise<PropertiesDataResponse | undefined> {
+    return await this.propertyService.findAllForDashboard(paginationDto);
+  }
+
   @Query(() => PropertiesDataResponse, { name: 'filterProperties' })
   async filterProperties(
     @Args('paginationDto') paginationDto: PaginationDto,
