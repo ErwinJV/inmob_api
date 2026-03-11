@@ -441,84 +441,78 @@ export class PropertyService {
 
     console.log({ filters, paginationDto });
 
-    // Verificar si hay filtros activos - CORREGIDO
-    const hasActiveFilters =
-      (filters.place !== undefined &&
-        filters.place !== null &&
-        filters.place !== '') ||
-      (filters.type !== undefined && filters.type !== null) ||
-      (filters.status !== undefined && filters.status !== null) ||
-      (filters.num_bathrooms !== undefined && filters.num_bathrooms !== 0) ||
-      (filters.num_bedrooms !== undefined && filters.num_bedrooms !== 0) ||
-      (filters.num_parking_lot !== undefined &&
-        filters.num_parking_lot !== 0) ||
-      (filters.min_area !== undefined && filters.min_area !== null) ||
-      (filters.max_area !== undefined && filters.max_area !== null);
+    // 1. Construir queryBuilder para Property
+    const queryBuilder = this.propertyRepository.createQueryBuilder('property');
 
-    // Caso especial: sin filtros
-    if (!hasActiveFilters) {
-      console.log('No filters applied, returning all properties');
-      const [properties, total] = await this.propertyRepository.findAndCount({
-        take: limit || 10,
-        skip: offset || 0,
-        order: { [order || 'created_at']: 'DESC' },
-        relations: ['images'],
-      });
+    // 2. Joins obligatorios para cargar relaciones y asegurar que existen
+    queryBuilder
 
-      return { total, properties };
-    }
+      .innerJoinAndSelect('property.user', 'user')
+      .leftJoinAndSelect('property.images', 'images', 'images.url IS NOT NULL'); // Solo imágenes con url válida
 
-    // Aplicar filtros normales
-    const whereConditions: Record<string, unknown> = {};
+    // 3. Subquery EXISTS para filtrar propiedades con al menos una imagen válida
+    const existsSubQuery = queryBuilder
+      .subQuery()
+      .select('1')
+      .from('property_image', 'img')
+      .where('img.propertyId = property.id')
+      .andWhere('img.url IS NOT NULL')
+      .getQuery();
 
+    queryBuilder.andWhere(`EXISTS(${existsSubQuery})`);
+
+    // 4. Campos propios obligatorios (ajusta según tu modelo)
+    queryBuilder
+      .andWhere('property.title IS NOT NULL')
+      .andWhere('property.description IS NOT NULL')
+      .andWhere('property.price IS NOT NULL');
+
+    // 6. Aplicar filtros dinámicos (si existen)
     if (filters.place) {
-      whereConditions.place = ILike(`%${filters.place}%`);
+      queryBuilder.andWhere({ place: ILike(`%${filters.place}%`) });
     }
     if (filters.type) {
-      whereConditions.type = filters.type;
+      queryBuilder.andWhere('property.type = :type', { type: filters.type });
     }
     if (filters.status) {
-      whereConditions.status = filters.status;
+      queryBuilder.andWhere('property.status = :status', {
+        status: filters.status,
+      });
     }
-    if (filters.num_bathrooms !== undefined && filters.num_bathrooms !== 0) {
-      whereConditions.num_bathrooms = filters.num_bathrooms;
+    if (filters.num_bathrooms && filters.num_bathrooms !== 0) {
+      queryBuilder.andWhere('property.num_bathrooms = :num_bathrooms', {
+        num_bathrooms: filters.num_bathrooms,
+      });
     }
-    if (filters.num_bedrooms !== undefined && filters.num_bedrooms !== 0) {
-      whereConditions.num_bedrooms = filters.num_bedrooms;
+    if (filters.num_bedrooms && filters.num_bedrooms !== 0) {
+      queryBuilder.andWhere('property.num_bedrooms = :num_bedrooms', {
+        num_bedrooms: filters.num_bedrooms,
+      });
     }
-    if (
-      filters.num_parking_lot !== undefined &&
-      filters.num_parking_lot !== 0
-    ) {
-      whereConditions.num_parking_lot = filters.num_parking_lot;
-    }
-
-    // Filtro por rango de área - CORREGIDO
-    if (
-      (filters.min_area !== undefined && filters.min_area !== null) ||
-      (filters.max_area !== undefined && filters.max_area !== null)
-    ) {
-      const minArea =
-        filters.min_area !== null && filters.min_area !== undefined
-          ? filters.min_area
-          : 0;
-      const maxArea =
-        filters.max_area !== null && filters.max_area !== undefined
-          ? filters.max_area
-          : 2147483647;
-
-      whereConditions.area = Between(minArea, maxArea);
+    if (filters.num_parking_lot && filters.num_parking_lot !== 0) {
+      queryBuilder.andWhere('property.num_parking_lot = :num_parking_lot', {
+        num_parking_lot: filters.num_parking_lot,
+      });
     }
 
-    console.log('WHERE CONDITIONS:', whereConditions); // Para debug
+    // Filtro por rango de área
+    if (filters.min_area != null || filters.max_area != null) {
+      const minArea = filters.min_area ?? 0;
+      const maxArea = filters.max_area ?? 2147483647;
+      queryBuilder.andWhere('property.area BETWEEN :minArea AND :maxArea', {
+        minArea,
+        maxArea,
+      });
+    }
 
-    const [properties, total] = await this.propertyRepository.findAndCount({
-      where: whereConditions,
-      take: limit || 10,
-      skip: offset || 0,
-      order: { [order || 'created_at']: 'DESC' },
-      relations: ['images'],
-    });
+    // 7. Paginación y orden
+    queryBuilder
+      .take(limit || 10)
+      .skip(offset || 0)
+      .orderBy(`property.${order}`, 'DESC');
+
+    // 8. Ejecutar consulta
+    const [properties, total] = await queryBuilder.getManyAndCount();
 
     console.log({ total, properties });
     return { total, properties };
