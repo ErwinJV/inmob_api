@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, ILike, Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 
 import { CommonService } from 'src/common/common.service';
 import { CreatePropertyInput } from './dto/create-property.input';
