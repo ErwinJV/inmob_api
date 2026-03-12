@@ -52,14 +52,11 @@ export class UsersController {
     const { user_id } = createUserFileInput;
 
     const user = await this.userService.findOne(user_id);
-    if (!user)
-      throw new BadRequestException(`User with id ${user_id} not found`);
-    // if (user.profile_picture_url) {
-    //   await this.cloudinaryService.deleteFile(user.profile_picture_url);
-    // }
+
+    console.log({ user });
     console.log('Secure_url: ', secure_url);
     return await this.userService.updateProfilePicture(
-      user_id,
+      user.id,
       secure_url as string,
     );
   }
