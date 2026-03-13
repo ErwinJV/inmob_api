@@ -37,7 +37,7 @@ export class PropertyService {
 
   async create(user: User, createPropertyInput: CreatePropertyInput) {
     const slug = createPropertyInput.title
-      .normalize('NFD')
+      .normalize('NFKD')
       .replaceAll(' ', '-');
     console.log({ createPropertyInput });
 
@@ -215,7 +215,7 @@ export class PropertyService {
       await this.findOne(id);
       if (updatePropertyInput.title) {
         const slug = updatePropertyInput.title
-          .normalize('NFD')
+          .normalize('NFKD')
           .replaceAll(' ', '-');
         const response = await this.propertyRepository.update(id, {
           ...updatePropertyInput,
