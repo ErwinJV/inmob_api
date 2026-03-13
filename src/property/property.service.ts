@@ -36,7 +36,9 @@ export class PropertyService {
   ) {}
 
   async create(user: User, createPropertyInput: CreatePropertyInput) {
-    const slug = createPropertyInput.title.replaceAll(' ', '-');
+    const slug = createPropertyInput.title
+      .normalize('NFD')
+      .replaceAll(' ', '-');
     console.log({ createPropertyInput });
 
     const { ...propertyDetails } = createPropertyInput;
@@ -135,6 +137,7 @@ export class PropertyService {
       this.commonService.handleExceptions(error);
     }
   }
+
   async findAllForDashboard(
     paginationDto: PaginationDto,
   ): Promise<PropertiesDataResponse | undefined> {
@@ -210,6 +213,17 @@ export class PropertyService {
   async update(id: string, updatePropertyInput: UpdatePropertyInput) {
     try {
       await this.findOne(id);
+      if (updatePropertyInput.title) {
+        const slug = updatePropertyInput.title
+          .normalize('NFD')
+          .replaceAll(' ', '-');
+        const response = await this.propertyRepository.update(id, {
+          ...updatePropertyInput,
+          slug,
+          updated_at: Date.now(),
+        });
+        return response;
+      }
       const response = await this.propertyRepository.update(id, {
         ...updatePropertyInput,
         updated_at: Date.now(),
