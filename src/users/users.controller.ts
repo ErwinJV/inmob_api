@@ -13,10 +13,10 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { RoleProtected } from 'src/auth/decorators/role-protected.decorator';
-import { UserRoleGuard } from 'src/auth/guards/validate-role.guard';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { ValidRoles } from 'src/common/enums/valid-roles.enum';
+import { RoleProtected } from '../auth/decorators/role-protected.decorator';
+import { UserRoleGuard } from '../auth/guards/validate-role.guard';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { ValidRoles } from '../common/enums/valid-roles.enum';
 
 import { CreateUserFileInput } from './dto/create-user-file.input';
 import { UsersService } from './users.service';

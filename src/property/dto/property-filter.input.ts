@@ -5,7 +5,7 @@ import { PropertyType } from '../enums/property-type.enum';
 @InputType()
 export class PropertyFilterInput {
   @Field(() => String, { nullable: true })
-  place?: string;
+  term?: string;
 
   @Field(() => PropertyType, { nullable: true })
   type?: PropertyType;

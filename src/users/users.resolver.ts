@@ -3,9 +3,9 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
-import { Auth } from 'src/auth/decorators/auth.decorator';
-import { ValidRoles } from 'src/common/enums/valid-roles.enum';
-import { PaginationDto } from 'src/common/dtos/paginator.dto';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { ValidRoles } from '../common/enums/valid-roles.enum';
+import { PaginationDto } from '../common/dtos/paginator.dto';
 import { UsersDataResponse } from './types/UsersDataResponse.type';
 import { UserUpdateResponse } from './types/UserUpdateResponse.type';
 

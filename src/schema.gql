@@ -265,7 +265,7 @@ input PaginationDto {
 }
 
 input PropertyFilterInput {
-  place: String
+  term: String
   type: PropertyType
   status: PropertyStatus
   num_bathrooms: Int

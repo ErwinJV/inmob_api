@@ -7,8 +7,8 @@ import {
   Resolver,
 } from '@nestjs/graphql';
 
-import { PaginationDto } from 'src/common/dtos/paginator.dto';
-import { User } from 'src/users/entities/user.entity';
+import { PaginationDto } from '../common/dtos/paginator.dto';
+import { User } from '../users/entities/user.entity';
 
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CreatePropertyInput } from './dto/create-property.input';
@@ -16,10 +16,10 @@ import { Property } from './entities/property.entity';
 import { UpdatePropertyInput } from './dto/update-property.input';
 
 import { PropertyService } from './property.service';
-import { Auth } from 'src/auth/decorators/auth.decorator';
-import { ValidRoles } from 'src/common/enums/valid-roles.enum';
+import { Auth } from '../auth/decorators/auth.decorator';
+import { ValidRoles } from '../common/enums/valid-roles.enum';
 import { CreateMultiplePropertiesInput } from './dto/create-multiple-property-inputs';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import { PropertiesDataResponse } from './types/PropertiesDataResponse.type';
 
 import { PropertyUpdateResponse } from './types/PropertyUpdateResponse.type';

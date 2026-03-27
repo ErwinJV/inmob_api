@@ -4,14 +4,14 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
+import { Brackets, ILike, Repository } from 'typeorm';
 
-import { CommonService } from 'src/common/common.service';
+import { CommonService } from '../common/common.service';
 import { CreatePropertyInput } from './dto/create-property.input';
-import { PaginationDto } from 'src/common/dtos/paginator.dto';
+import { PaginationDto } from '../common/dtos/paginator.dto';
 import { Property } from './entities/property.entity';
 import { UpdatePropertyInput } from './dto/update-property.input';
-import { User } from 'src/users/entities/user.entity';
+import { User } from '../users/entities/user.entity';
 import { PropertiesDataResponse } from './types/PropertiesDataResponse.type';
 import { CreatePropertyFileInput } from './dto/create-property-file.input';
 import { PropertyImage } from './entities/property-image.entity';
@@ -36,11 +36,6 @@ export class PropertyService {
   ) {}
 
   async create(user: User, createPropertyInput: CreatePropertyInput) {
-    const slug = createPropertyInput.title
-      .normalize('NFKD')
-      .replaceAll(' ', '-');
-    console.log({ createPropertyInput });
-
     const { ...propertyDetails } = createPropertyInput;
     console.log({ propertyDetails });
     if (
@@ -54,6 +49,13 @@ export class PropertyService {
         `Some of the not-null values (title,description,type,status,place) of createUserInput is undefined`,
       );
     }
+
+    const slug = createPropertyInput.title
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replaceAll(' ', '-')
+      .toLowerCase();
+    console.log({ createPropertyInput });
 
     const date = Date.now();
     console.log(user);
@@ -77,65 +79,61 @@ export class PropertyService {
     paginationDto: PaginationDto,
   ): Promise<PropertiesDataResponse | undefined> {
     const { limit = 0, offset = 0, order = 'DESC' } = paginationDto;
-    try {
-      const queryBuilder =
-        this.propertyRepository.createQueryBuilder('property');
 
-      // Inner joins para relaciones ManyToOne (obligatorias)
-      queryBuilder.innerJoinAndSelect('property.user', 'user');
+    const queryBuilder = this.propertyRepository.createQueryBuilder('property');
 
-      // Cargar las imágenes, pero solo aquellas con url no nula
-      // (opcional: si quieres todas las imágenes, omite la tercera condición)
-      queryBuilder.leftJoinAndSelect(
-        'property.images',
-        'images',
-        'images.url IS NOT NULL',
+    // Inner joins para relaciones ManyToOne (obligatorias)
+    queryBuilder.innerJoinAndSelect('property.user', 'user');
+
+    // Cargar las imágenes, pero solo aquellas con url no nula
+    // (opcional: si quieres todas las imágenes, omite la tercera condición)
+    queryBuilder.leftJoinAndSelect(
+      'property.images',
+      'images',
+      'images.url IS NOT NULL',
+    );
+
+    // Subquery EXISTS para verificar que la propiedad tenga al menos una imagen
+    // con campos no nulos (por ejemplo, la URL de la imagen)
+    const normalizeOrder = order.toUpperCase();
+    const existsSubQuery = queryBuilder
+      .subQuery()
+      .select('1')
+      .from('property_image', 'image') // nombre real de la tabla en BD
+      // .from(PropertyImage, 'image')        // alternativa si usas la entidad
+      .where('image.propertyId = property.id') // ajusta el nombre de la columna FK si es necesario
+      .andWhere('image.url IS NOT NULL')
+      .getQuery();
+
+    queryBuilder.andWhere(`EXISTS(${existsSubQuery})`);
+
+    // Condiciones para campos propios no nulos (ajusta según tu modelo)
+    queryBuilder
+      .andWhere('property.title IS NOT NULL')
+      .andWhere('property.description IS NOT NULL')
+      .andWhere('property.price IS NOT NULL')
+      .andWhere('property.main_picture_url IS NOT NULL');
+
+    // Paginación y orden
+    queryBuilder
+      .take(limit)
+      .skip(offset)
+      .orderBy('property.id', normalizeOrder as PaginationDto['order']);
+
+    // Obtener resultados y total filtrado
+    const [properties, total] = await queryBuilder.getManyAndCount();
+
+    if (!properties || total === 0) {
+      throw new NotFoundException(
+        'No properties found after filtering null values',
       );
-
-      // Subquery EXISTS para verificar que la propiedad tenga al menos una imagen
-      // con campos no nulos (por ejemplo, la URL de la imagen)
-      const normalizeOrder = order.toUpperCase();
-      const existsSubQuery = queryBuilder
-        .subQuery()
-        .select('1')
-        .from('property_image', 'image') // nombre real de la tabla en BD
-        // .from(PropertyImage, 'image')        // alternativa si usas la entidad
-        .where('image.propertyId = property.id') // ajusta el nombre de la columna FK si es necesario
-        .andWhere('image.url IS NOT NULL')
-        .getQuery();
-
-      queryBuilder.andWhere(`EXISTS(${existsSubQuery})`);
-
-      // Condiciones para campos propios no nulos (ajusta según tu modelo)
-      queryBuilder
-        .andWhere('property.title IS NOT NULL')
-        .andWhere('property.description IS NOT NULL')
-        .andWhere('property.price IS NOT NULL')
-        .andWhere('property.main_picture_url IS NOT NULL');
-
-      // Paginación y orden
-      queryBuilder
-        .take(limit)
-        .skip(offset)
-        .orderBy('property.id', normalizeOrder as PaginationDto['order']);
-
-      // Obtener resultados y total filtrado
-      const [properties, total] = await queryBuilder.getManyAndCount();
-
-      if (!properties || properties.length === 0) {
-        throw new NotFoundException(
-          'No properties found after filtering null values',
-        );
-      }
-      console.log({ properties });
-
-      return {
-        properties,
-        total,
-      };
-    } catch (error) {
-      this.commonService.handleExceptions(error);
     }
+    console.log({ properties });
+
+    return {
+      properties,
+      total,
+    };
   }
 
   async findAllForDashboard(
@@ -169,31 +167,28 @@ export class PropertyService {
 
   async findOne(term: string) {
     let property: Property | null;
-    try {
-      const propertyById = await this.propertyRepository.findOne({
+
+    const propertyById = await this.propertyRepository.findOne({
+      where: {
+        id: term,
+      },
+    });
+
+    if (!propertyById) {
+      property = await this.propertyRepository.findOne({
         where: {
-          id: term,
+          slug: term,
         },
       });
-
-      if (!propertyById) {
-        property = await this.propertyRepository.findOne({
-          where: {
-            slug: term,
-          },
-        });
-      } else {
-        property = propertyById;
-      }
-
-      if (!property) {
-        throw new NotFoundException(`User with term: ${term} not found`);
-      }
-
-      return property;
-    } catch (error) {
-      this.commonService.handleExceptions(error);
+    } else {
+      property = propertyById;
     }
+
+    if (!property) {
+      throw new NotFoundException(`User with term: ${term} not found`);
+    }
+
+    return property;
   }
 
   async findOneBySlug(slug: string) {
@@ -215,8 +210,10 @@ export class PropertyService {
       await this.findOne(id);
       if (updatePropertyInput.title) {
         const slug = updatePropertyInput.title
-          .normalize('NFKD')
-          .replaceAll(' ', '-');
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replaceAll(' ', '-')
+          .toLowerCase();
         const response = await this.propertyRepository.update(id, {
           ...updatePropertyInput,
           slug,
@@ -236,7 +233,7 @@ export class PropertyService {
 
   async remove(id: string) {
     try {
-      const property = (await this.findOne(id)) as Property;
+      const property = await this.findOne(id);
       if (property.images?.length) {
         const images = property.images;
         for (const image of images) {
@@ -531,9 +528,17 @@ export class PropertyService {
       .andWhere('property.price IS NOT NULL');
 
     // 6. Aplicar filtros dinámicos (si existen)
-    if (filters.place) {
-      queryBuilder.andWhere({ place: ILike(`%${filters.place}%`) });
+
+    if (filters.term) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('place ILIKE :term', { term: `%${filters.term}%` })
+            .orWhere('title ILIKE :term', { term: `%${filters.term}%` })
+            .orWhere('description ILIKE :term', { term: `%${filters.term}%` });
+        }),
+      );
     }
+
     if (filters.type) {
       queryBuilder.andWhere('property.type = :type', { type: filters.type });
     }
@@ -593,36 +598,32 @@ export class PropertyService {
       );
     }
 
-    try {
-      // Crear el patrón de búsqueda
-      const searchPattern = `%${term}%`;
+    // Crear el patrón de búsqueda
+    const searchPattern = `%${term}%`;
 
-      // Buscar propiedades usando el operador ILike
-      const [properties, total] = await this.propertyRepository.findAndCount({
-        where: [
-          { title: ILike(searchPattern) },
-          { description: ILike(searchPattern) },
-          { place: ILike(searchPattern) },
-        ],
-        order: {
-          created_at: order === 'DESC' ? 'DESC' : 'ASC',
-        },
-        take: limit,
-        skip: offset,
-      });
+    // Buscar propiedades usando el operador ILike
+    const [properties, total] = await this.propertyRepository.findAndCount({
+      where: [
+        { title: ILike(searchPattern) },
+        { description: ILike(searchPattern) },
+        { place: ILike(searchPattern) },
+      ],
+      order: {
+        created_at: order === 'DESC' ? 'DESC' : 'ASC',
+      },
+      take: limit,
+      skip: offset,
+    });
 
-      if (!properties || properties.length === 0) {
-        throw new NotFoundException(
-          `No se encontraron propiedades que coincidan con: ${term}`,
-        );
-      }
-
-      return {
-        properties,
-        total,
-      };
-    } catch (error) {
-      this.commonService.handleExceptions(error);
+    if (!properties || properties.length === 0) {
+      throw new NotFoundException(
+        `No se encontraron propiedades que coincidan con: ${term}`,
+      );
     }
+
+    return {
+      properties,
+      total,
+    };
   }
 }
