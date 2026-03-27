@@ -10,10 +10,10 @@ import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import * as bcrypt from 'bcryptjs';
-import { CommonService } from 'src/common/common.service';
-import { PaginationDto } from 'src/common/dtos/paginator.dto';
+import { CommonService } from '../common/common.service';
+import { PaginationDto } from '../common/dtos/paginator.dto';
 import { UsersDataResponse } from './types/UsersDataResponse.type';
-import { PropertyService } from 'src/property/property.service';
+import { PropertyService } from '../property/property.service';
 
 @Injectable()
 export class UsersService {

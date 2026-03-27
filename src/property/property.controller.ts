@@ -16,11 +16,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { PropertyService } from './property.service';
 import { CreatePropertyFileInput } from './dto/create-property-file.input';
 import { AuthGuard } from '@nestjs/passport';
-import { ValidRoles } from 'src/common/enums/valid-roles.enum';
-import { UserRoleGuard } from 'src/auth/guards/validate-role.guard';
-import { RoleProtected } from 'src/auth/decorators/role-protected.decorator';
+import { ValidRoles } from '../common/enums/valid-roles.enum';
+import { UserRoleGuard } from '../auth/guards/validate-role.guard';
+import { RoleProtected } from '../auth/decorators/role-protected.decorator';
 
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Controller('property')
 export class PropertyController {
