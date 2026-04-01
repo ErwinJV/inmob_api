@@ -3,19 +3,20 @@ import { PropertyService } from './property.service';
 import { PropertyResolver } from './property.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Property } from './entities/property.entity';
-import { CommonModule } from 'src/common/common.module';
+import { CommonModule } from '../common/common.module';
 import { registerEnumType } from '@nestjs/graphql';
 import { PropertyType } from './enums/property-type.enum';
 import { PropertyStatus } from './enums/property-status.enum';
-import { UsersModule } from 'src/users/users.module';
+import { UsersModule } from '../users/users.module';
 import { PropertyController } from './property.controller';
-import { FilesModule } from 'src/files/files.module';
+import { FilesModule } from '../files/files.module';
 import { PropertyImage } from './entities/property-image.entity';
-import { AuthModule } from 'src/auth/auth.module';
+import { AuthModule } from '../auth/auth.module';
 import { PropertyVideo } from './entities/property-video.entity';
 import { PropertyImage360 } from './entities/property-image-360';
 import { PropertyVirtualTour } from './entities/property-virtual-tour';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { RevalidationModule } from '../revalidation/revalidation.module';
 
 registerEnumType(PropertyType, {
   name: 'PropertyType',
@@ -39,6 +40,7 @@ registerEnumType(PropertyStatus, {
     FilesModule,
     AuthModule,
     CloudinaryModule,
+    RevalidationModule,
   ],
   providers: [PropertyResolver, PropertyService],
   exports: [PropertyService],
