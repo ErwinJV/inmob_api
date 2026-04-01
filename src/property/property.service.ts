@@ -19,6 +19,7 @@ import { PropertyFilterInput } from './dto/property-filter.input';
 import { PropertyVideo } from './entities/property-video.entity';
 import { PropertyImage360 } from './entities/property-image-360';
 import { PropertyVirtualTour } from './entities/property-virtual-tour';
+import { RevalidationService } from '../revalidation/revalidation.service';
 // import { UploadTestFileInput } from './dto/upload-test-file.input';
 
 @Injectable()
@@ -33,6 +34,7 @@ export class PropertyService {
     @InjectRepository(PropertyImage360)
     private readonly propertyImage360Repository: Repository<PropertyImage360>,
     private readonly commonService: CommonService,
+    private readonly revalidationService: RevalidationService,
   ) {}
 
   async create(user: User, createPropertyInput: CreatePropertyInput) {
@@ -69,7 +71,11 @@ export class PropertyService {
         updated_at: date,
       });
 
-      return await this.propertyRepository.save(property);
+      const userResponse = await this.propertyRepository.save(property);
+
+      await this.revalidationService.notifyFrontend('properties', 'CREATE');
+
+      return userResponse;
     } catch (error) {
       this.commonService.handleExceptions(error);
     }
@@ -207,7 +213,7 @@ export class PropertyService {
 
   async update(id: string, updatePropertyInput: UpdatePropertyInput) {
     try {
-      await this.findOne(id);
+      const property = await this.findOne(id);
       if (updatePropertyInput.title) {
         const slug = updatePropertyInput.title
           .normalize('NFD')
@@ -219,12 +225,20 @@ export class PropertyService {
           slug,
           updated_at: Date.now(),
         });
+        console.log({ slug });
+
+        await this.revalidationService.notifyFrontend('properties', 'UPDATE');
         return response;
       }
       const response = await this.propertyRepository.update(id, {
         ...updatePropertyInput,
         updated_at: Date.now(),
       });
+      await this.revalidationService.notifyFrontend(
+        'properties',
+        'UPDATE',
+        property.slug,
+      );
       return response;
     } catch (error) {
       this.commonService.handleExceptions(error);
@@ -256,6 +270,11 @@ export class PropertyService {
       }
       const response = await this.propertyRepository.remove(property);
       console.log({ response });
+      await this.revalidationService.notifyFrontend(
+        'properties',
+        'DELETE',
+        property.slug,
+      );
       return response;
     } catch (error) {
       this.commonService.handleExceptions(error);

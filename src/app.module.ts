@@ -11,6 +11,7 @@ import { PropertyModule } from './property/property.module';
 import { FilesModule } from './files/files.module';
 import { PromptAiModule } from './prompt-ai/prompt-ai.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { RevalidationModule } from './revalidation/revalidation.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
     FilesModule,
     PromptAiModule,
     CloudinaryModule,
+    RevalidationModule,
   ],
   controllers: [],
   providers: [],
