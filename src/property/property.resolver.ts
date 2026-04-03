@@ -55,6 +55,18 @@ export class PropertyResolver {
     return await this.propertyService.findAll(paginationDto);
   }
 
+  @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
+  @Query(() => PropertiesDataResponse, {
+    name: 'propertiesForUser',
+    description: 'Returns a paginated list of properties for a specific user',
+  })
+  async findAllForUser(
+    @CurrentUser() user: User,
+    @Args('paginationDto') paginationDto: PaginationDto,
+  ): Promise<PropertiesDataResponse | undefined> {
+    return await this.propertyService.findAllForUserID(paginationDto, user.id);
+  }
+
   // @Auth(ValidRoles.ADMIN)
   @Query(() => PropertiesDataResponse, {
     name: 'propertiesDashboard',
