@@ -150,19 +150,22 @@ export class UsersService {
     });
   }
 
-  async remove(id: string): Promise<User> {
-    const user = await this.findOne(id);
-    if (!user) {
+  async remove(id: string, user: User): Promise<User> {
+    if (id === user.id) {
+      throw new BadRequestException(`You can't delete yourself!`);
+    }
+    const userRemove = await this.findOne(id);
+    if (!userRemove) {
       throw new NotFoundException(`User with ${id} not found`);
     }
-    if (user.properties?.length) {
-      const properties = user.properties;
+    if (userRemove.properties?.length) {
+      const properties = userRemove.properties;
       for (const property of properties) {
-        await this.propertyService.remove(property.id);
+        await this.propertyService.remove(property.id, user);
       }
     }
 
-    const response = await this.userRepository.remove(user);
+    const response = await this.userRepository.remove(userRemove);
     response.id = user.id || '';
 
     return response;

@@ -241,6 +241,9 @@ type Query {
   """Returns a paginated list of properties"""
   properties(paginationDto: PaginationDto!): PropertiesDataResponse!
 
+  """Returns a paginated list of properties for a specific user"""
+  propertiesForUser(paginationDto: PaginationDto!): PropertiesDataResponse!
+
   """Returns a paginated list of properties """
   propertiesDashboard(paginationDto: PaginationDto!): PropertiesDataResponse!
   filterProperties(paginationDto: PaginationDto!, filters: PropertyFilterInput): PropertiesDataResponse!

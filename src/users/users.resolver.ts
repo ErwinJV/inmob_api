@@ -8,6 +8,7 @@ import { ValidRoles } from '../common/enums/valid-roles.enum';
 import { PaginationDto } from '../common/dtos/paginator.dto';
 import { UsersDataResponse } from './types/UsersDataResponse.type';
 import { UserUpdateResponse } from './types/UserUpdateResponse.type';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -61,8 +62,11 @@ export class UsersResolver {
     description:
       'Remove a single user required by a required id (uuid), authorization bearer token is required in the header request',
   })
-  async removeUser(@Args('id', { type: () => String }) id: string) {
-    return await this.usersService.remove(id);
+  async removeUser(
+    @CurrentUser() user: User,
+    @Args('id', { type: () => String }) id: string,
+  ) {
+    return await this.usersService.remove(id, user);
     /* Test deploy Railway */
   }
 }
