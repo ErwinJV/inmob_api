@@ -73,7 +73,11 @@ export class PropertyService {
 
       const userResponse = await this.propertyRepository.save(property);
 
-      await this.revalidationService.notifyFrontend('properties', 'CREATE');
+      this.revalidationService
+        .notifyFrontend('properties', 'CREATE')
+        .catch((error) => {
+          console.error('Error notifying frontend:', error);
+        });
 
       return userResponse;
     } catch (error) {
@@ -119,6 +123,71 @@ export class PropertyService {
       .andWhere('property.description IS NOT NULL')
       .andWhere('property.price IS NOT NULL')
       .andWhere('property.main_picture_url IS NOT NULL');
+
+    // Paginación y orden
+    queryBuilder
+      .take(limit)
+      .skip(offset)
+      .orderBy('property.id', normalizeOrder as PaginationDto['order']);
+
+    // Obtener resultados y total filtrado
+    const [properties, total] = await queryBuilder.getManyAndCount();
+
+    if (!properties || total === 0) {
+      throw new NotFoundException(
+        'No properties found after filtering null values',
+      );
+    }
+    console.log({ properties });
+
+    return {
+      properties,
+      total,
+    };
+  }
+
+  async findAllForUserID(
+    paginationDto: PaginationDto,
+    userID: string,
+  ): Promise<PropertiesDataResponse | undefined> {
+    const { limit = 0, offset = 0, order = 'DESC' } = paginationDto;
+
+    const queryBuilder = this.propertyRepository.createQueryBuilder('property');
+
+    // Inner joins para relaciones ManyToOne (obligatorias)
+    queryBuilder.innerJoinAndSelect('property.user', 'user');
+
+    // Cargar las imágenes, pero solo aquellas con url no nula
+    // (opcional: si quieres todas las imágenes, omite la tercera condición)
+    queryBuilder.leftJoinAndSelect(
+      'property.images',
+      'images',
+      'images.url IS NOT NULL',
+    );
+
+    // Subquery EXISTS para verificar que la propiedad tenga al menos una imagen
+    // con campos no nulos (por ejemplo, la URL de la imagen)
+    const normalizeOrder = order.toUpperCase();
+    const existsSubQuery = queryBuilder
+      .subQuery()
+      .select('1')
+      .from('property_image', 'image') // nombre real de la tabla en BD
+      // .from(PropertyImage, 'image')        // alternativa si usas la entidad
+      .where('image.propertyId = property.id') // ajusta el nombre de la columna FK si es necesario
+      .andWhere('image.url IS NOT NULL')
+      .getQuery();
+
+    queryBuilder.andWhere(`EXISTS(${existsSubQuery})`);
+
+    // Condiciones para campos propios no nulos (ajusta según tu modelo)
+    queryBuilder
+      .andWhere('property.title IS NOT NULL')
+      .andWhere('property.description IS NOT NULL')
+      .andWhere('property.price IS NOT NULL')
+      .andWhere('property.main_picture_url IS NOT NULL');
+
+    // Filtrar por userID
+    queryBuilder.andWhere('property.userId = :userId', { userID });
 
     // Paginación y orden
     queryBuilder
@@ -270,11 +339,12 @@ export class PropertyService {
       }
       const response = await this.propertyRepository.remove(property);
       console.log({ response });
-      await this.revalidationService.notifyFrontend(
-        'properties',
-        'DELETE',
-        property.slug,
-      );
+      this.revalidationService
+        .notifyFrontend('properties', 'DELETE', property.slug)
+        .catch((error) => {
+          console.error('Error notifying frontend:', error);
+        });
+
       return response;
     } catch (error) {
       this.commonService.handleExceptions(error);
@@ -427,78 +497,6 @@ export class PropertyService {
       this.commonService.handleExceptions(error);
     }
   }
-
-  // private async sendFile(
-  //   createPropertyFileInput: CreatePropertyFileInput,
-  //   file: Express.Multer.File,
-  // ): Promise<string> {
-  //   const FILE_SERVER_SERVICE_URL = process.env[
-  //     'FILE_SERVER_SERVICE_URL'
-  //   ] as string;
-  //   const formData = new FormData();
-  //   const { property_id } = createPropertyFileInput;
-  //   const blob = new Blob([file.buffer as BlobPart], { type: file.mimetype });
-  //   formData.append('file', blob);
-  //   formData.append('entity', 'properties');
-  //   formData.append('entityID', property_id);
-
-  //   const response = await fetch(`${FILE_SERVER_SERVICE_URL}/api/uploads/`, {
-  //     body: formData,
-  //     method: 'post',
-  //   });
-
-  //   const { fileName } = (await response.json()) as unknown as {
-  //     fileName: string;
-  //   };
-
-  //   return fileName;
-  // }
-
-  // async uploadTestFile(
-  //   uploadTestFileInput: UploadTestFileInput,
-  //   files: Express.Multer.File[],
-  // ): Promise<
-  //   Array<PropertyImage | PropertyVideo | PropertyImage360> | undefined
-  // > {
-  //   try {
-  //     const results: Array<PropertyImage | PropertyVideo | PropertyImage360> =
-  //       [];
-
-  //     for (const file of files) {
-  //       // Convertir UploadTestFileInput a CreatePropertyFileInput
-  //       const createPropertyFileInput: CreatePropertyFileInput = {
-  //         property_id: uploadTestFileInput.property_id,
-  //         fileType: uploadTestFileInput.fileType,
-  //       };
-
-  //       // Validar tipo de archivo antes de procesar
-  //       if (
-  //         !this.isValidFileType(uploadTestFileInput.fileType, file.mimetype)
-  //       ) {
-  //         throw new BadRequestException(
-  //           `Invalid file type for ${uploadTestFileInput.fileType}. File: ${file.originalname}`,
-  //         );
-  //       }
-
-  //       // Reutilizar la función uploadFile original para cada archivo
-  //       const result = await this.uploadFile(createPropertyFileInput, file);
-  //       if (result) {
-  //         results.push(result);
-  //       }
-  //     }
-
-  //     return results;
-  //   } catch (error) {
-  //     this.commonService.handleExceptions(error);
-  //   }
-  // }
-
-  // private generateFileName(originalName: string, fileType: string): string {
-  //   const timestamp = Date.now();
-  //   const randomString = Math.random().toString(36).substring(2, 15);
-  //   const extension = originalName.split('.').pop();
-  //   return `${fileType}_${timestamp}_${randomString}.${extension}`;
-  // }
 
   isValidFileType(fileType: string, mimeType: string): boolean {
     const validMimeTypes: Record<string, string[]> = {
