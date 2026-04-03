@@ -32,7 +32,7 @@ export class PropertyResolver {
     private readonly userService: UsersService,
   ) {}
 
-  @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
+  @Auth(ValidRoles.ADMIN, ValidRoles.AGENT)
   @Mutation(() => Property, {
     name: 'createProperty',
     description:
@@ -55,7 +55,7 @@ export class PropertyResolver {
     return await this.propertyService.findAll(paginationDto);
   }
 
-  @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
+  @Auth(ValidRoles.ADMIN, ValidRoles.AGENT)
   @Query(() => PropertiesDataResponse, {
     name: 'propertiesForUser',
     description: 'Returns a paginated list of properties for a specific user',
@@ -105,29 +105,34 @@ export class PropertyResolver {
     return this.propertyService.findOneBySlug(slug);
   }
 
-  @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
+  @Auth(ValidRoles.ADMIN, ValidRoles.AGENT)
   @Mutation(() => PropertyUpdateResponse, {
     name: 'updateProperty',
     description:
       'Update a single property by updatePropertyInput params and required id, authorization bearer token is required in the header request',
   })
   updateProperty(
+    @CurrentUser() user: User,
     @Args('updatePropertyInput') updatePropertyInput: UpdatePropertyInput,
   ) {
     return this.propertyService.update(
       updatePropertyInput.id,
       updatePropertyInput,
+      user,
     );
   }
 
-  @Auth(ValidRoles.ADMIN, ValidRoles.EDITOR)
+  @Auth(ValidRoles.ADMIN, ValidRoles.AGENT)
   @Mutation(() => Property, {
     name: 'removeProperty',
     description:
       'Remove a single property by required id, authorization bearer token is required in the header request',
   })
-  async removeProperty(@Args('id', { type: () => String }) id: string) {
-    return await this.propertyService.remove(id);
+  async removeProperty(
+    @CurrentUser() user: User,
+    @Args('id', { type: () => String }) id: string,
+  ) {
+    return await this.propertyService.remove(id, user);
   }
 
   @Auth(ValidRoles.ADMIN)
