@@ -22,6 +22,9 @@ import { RoleProtected } from '../auth/decorators/role-protected.decorator';
 
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
+import { User } from '../users/entities/user.entity';
+import { CurrentUser } from '../auth/decorators/current-user-controller.decorator';
+
 @Controller('property')
 export class PropertyController {
   constructor(
@@ -30,10 +33,11 @@ export class PropertyController {
   ) {}
 
   @Post('upload-file')
-  @RoleProtected(ValidRoles.ADMIN, ValidRoles.EDITOR, ValidRoles.USER)
+  @RoleProtected(ValidRoles.ADMIN, ValidRoles.AGENT)
   @UseGuards(AuthGuard(), UserRoleGuard)
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
+    @CurrentUser() user: User,
     @Body() createPropertyFileInput: CreatePropertyFileInput,
     @UploadedFile(
       new ParseFilePipe({
@@ -47,8 +51,17 @@ export class PropertyController {
     )
     file: Express.Multer.File,
   ) {
-    console.log({ createPropertyFileInput });
     if (!file) throw new BadRequestException(`File is undefined`);
+    if (user.roles.includes('AGENT')) {
+      const property = await this.propertyService.findOne(
+        createPropertyFileInput.property_id,
+      );
+      if (property.userId !== user.id) {
+        throw new BadRequestException(
+          `You don't have permissions to upload files for this property!`,
+        );
+      }
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const { secure_url } = await this.cloudinaryService.uploadFile(file);

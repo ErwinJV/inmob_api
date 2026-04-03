@@ -280,9 +280,18 @@ export class PropertyService {
     }
   }
 
-  async update(id: string, updatePropertyInput: UpdatePropertyInput) {
+  async update(
+    id: string,
+    updatePropertyInput: UpdatePropertyInput,
+    user: User,
+  ) {
     try {
       const property = await this.findOne(id);
+      if (!user.roles.includes('ADMIN') && user.id !== property.userId) {
+        throw new BadRequestException(
+          `You don't have permissions to update this property!`,
+        );
+      }
       if (updatePropertyInput.title) {
         const slug = updatePropertyInput.title
           .normalize('NFD')
@@ -314,9 +323,14 @@ export class PropertyService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, user: User) {
     try {
       const property = await this.findOne(id);
+      if (!user.roles.includes('ADMIN') && user.id !== property.userId) {
+        throw new BadRequestException(
+          `You don't have permissions to delete this property!`,
+        );
+      }
       if (property.images?.length) {
         const images = property.images;
         for (const image of images) {
@@ -500,9 +514,9 @@ export class PropertyService {
 
   isValidFileType(fileType: string, mimeType: string): boolean {
     const validMimeTypes: Record<string, string[]> = {
-      image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      image: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
       video: ['video/mp4', 'video/avi', 'video/mov', 'video/wmv'],
-      image360: ['image/jpeg', 'image/png'],
+      image360: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'],
     };
 
     console.log({ fileType });
