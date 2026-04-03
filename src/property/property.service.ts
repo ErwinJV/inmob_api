@@ -148,7 +148,7 @@ export class PropertyService {
 
   async findAllForUserID(
     paginationDto: PaginationDto,
-    userID: string,
+    userId: string,
   ): Promise<PropertiesDataResponse | undefined> {
     const { limit = 0, offset = 0, order = 'DESC' } = paginationDto;
 
@@ -187,7 +187,7 @@ export class PropertyService {
       .andWhere('property.main_picture_url IS NOT NULL');
 
     // Filtrar por userID
-    queryBuilder.andWhere('property.userId = :userId', { userID });
+    queryBuilder.andWhere('property.userId = :userId', { userId });
 
     // Paginación y orden
     queryBuilder
