@@ -135,7 +135,7 @@ export class PropertyResolver {
     return await this.propertyService.remove(id, user);
   }
 
-  @Auth(ValidRoles.ADMIN)
+  @Auth(ValidRoles.ADMIN, ValidRoles.AGENT)
   @Mutation(() => [Property], {
     name: 'createMultipleProperties',
     description: 'Creates a multiple fake properties for development testing',
