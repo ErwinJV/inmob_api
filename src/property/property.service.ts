@@ -20,7 +20,6 @@ import { PropertyVideo } from './entities/property-video.entity';
 import { PropertyImage360 } from './entities/property-image-360';
 import { PropertyVirtualTour } from './entities/property-virtual-tour';
 import { RevalidationService } from '../revalidation/revalidation.service';
-// import { UploadTestFileInput } from './dto/upload-test-file.input';
 
 @Injectable()
 export class PropertyService {
@@ -55,9 +54,10 @@ export class PropertyService {
     const slug = createPropertyInput.title
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
-      .replaceAll(' ', '-')
+      .replace(/[^\w\s-]/g, '')
+      .trim()
+      .replace(/[-\s]+/g, '-')
       .toLowerCase();
-    console.log({ createPropertyInput });
 
     const date = Date.now();
     console.log(user);
@@ -92,45 +92,36 @@ export class PropertyService {
 
     const queryBuilder = this.propertyRepository.createQueryBuilder('property');
 
-    // Inner joins para relaciones ManyToOne (obligatorias)
     queryBuilder.innerJoinAndSelect('property.user', 'user');
 
-    // Cargar las imágenes, pero solo aquellas con url no nula
-    // (opcional: si quieres todas las imágenes, omite la tercera condición)
     queryBuilder.leftJoinAndSelect(
       'property.images',
       'images',
       'images.url IS NOT NULL',
     );
 
-    // Subquery EXISTS para verificar que la propiedad tenga al menos una imagen
-    // con campos no nulos (por ejemplo, la URL de la imagen)
     const normalizeOrder = order.toUpperCase();
     const existsSubQuery = queryBuilder
       .subQuery()
       .select('1')
-      .from('property_image', 'image') // nombre real de la tabla en BD
-      // .from(PropertyImage, 'image')        // alternativa si usas la entidad
-      .where('image.propertyId = property.id') // ajusta el nombre de la columna FK si es necesario
+      .from('property_image', 'image')
+      .where('image.propertyId = property.id')
       .andWhere('image.url IS NOT NULL')
       .getQuery();
 
     queryBuilder.andWhere(`EXISTS(${existsSubQuery})`);
 
-    // Condiciones para campos propios no nulos (ajusta según tu modelo)
     queryBuilder
       .andWhere('property.title IS NOT NULL')
       .andWhere('property.description IS NOT NULL')
       .andWhere('property.price IS NOT NULL')
       .andWhere('property.main_picture_url IS NOT NULL');
 
-    // Paginación y orden
     queryBuilder
       .take(limit)
       .skip(offset)
       .orderBy('property.id', normalizeOrder as PaginationDto['order']);
 
-    // Obtener resultados y total filtrado
     const [properties, total] = await queryBuilder.getManyAndCount();
 
     if (!properties || total === 0) {
@@ -154,48 +145,38 @@ export class PropertyService {
 
     const queryBuilder = this.propertyRepository.createQueryBuilder('property');
 
-    // Inner joins para relaciones ManyToOne (obligatorias)
     queryBuilder.innerJoinAndSelect('property.user', 'user');
 
-    // Cargar las imágenes, pero solo aquellas con url no nula
-    // (opcional: si quieres todas las imágenes, omite la tercera condición)
     queryBuilder.leftJoinAndSelect(
       'property.images',
       'images',
       'images.url IS NOT NULL',
     );
 
-    // Subquery EXISTS para verificar que la propiedad tenga al menos una imagen
-    // con campos no nulos (por ejemplo, la URL de la imagen)
     const normalizeOrder = order.toUpperCase();
     const existsSubQuery = queryBuilder
       .subQuery()
       .select('1')
-      .from('property_image', 'image') // nombre real de la tabla en BD
-      // .from(PropertyImage, 'image')        // alternativa si usas la entidad
-      .where('image.propertyId = property.id') // ajusta el nombre de la columna FK si es necesario
+      .from('property_image', 'image')
+      .where('image.propertyId = property.id')
       .andWhere('image.url IS NOT NULL')
       .getQuery();
 
     queryBuilder.andWhere(`EXISTS(${existsSubQuery})`);
 
-    // Condiciones para campos propios no nulos (ajusta según tu modelo)
     queryBuilder
       .andWhere('property.title IS NOT NULL')
       .andWhere('property.description IS NOT NULL')
       .andWhere('property.price IS NOT NULL')
       .andWhere('property.main_picture_url IS NOT NULL');
 
-    // Filtrar por userID
     queryBuilder.andWhere('property.userId = :userId', { userId });
 
-    // Paginación y orden
     queryBuilder
       .take(limit)
       .skip(offset)
       .orderBy('property.id', normalizeOrder as PaginationDto['order']);
 
-    // Obtener resultados y total filtrado
     const [properties, total] = await queryBuilder.getManyAndCount();
 
     if (!properties || total === 0) {
@@ -203,7 +184,6 @@ export class PropertyService {
         'No properties found after filtering null values',
       );
     }
-    console.log({ properties });
 
     return {
       properties,
@@ -296,7 +276,9 @@ export class PropertyService {
         const slug = updatePropertyInput.title
           .normalize('NFD')
           .replace(/[\u0300-\u036f]/g, '')
-          .replaceAll(' ', '-')
+          .replace(/[^\w\s-]/g, '')
+          .trim()
+          .replace(/[-\s]+/g, '-')
           .toLowerCase();
         const response = await this.propertyRepository.update(id, {
           ...updatePropertyInput,
@@ -532,16 +514,13 @@ export class PropertyService {
 
     console.log({ filters, paginationDto });
 
-    // 1. Construir queryBuilder para Property
     const queryBuilder = this.propertyRepository.createQueryBuilder('property');
 
-    // 2. Joins obligatorios para cargar relaciones y asegurar que existen
     queryBuilder
 
       .innerJoinAndSelect('property.user', 'user')
-      .leftJoinAndSelect('property.images', 'images', 'images.url IS NOT NULL'); // Solo imágenes con url válida
+      .leftJoinAndSelect('property.images', 'images', 'images.url IS NOT NULL');
 
-    // 3. Subquery EXISTS para filtrar propiedades con al menos una imagen válida
     const existsSubQuery = queryBuilder
       .subQuery()
       .select('1')
@@ -552,13 +531,10 @@ export class PropertyService {
 
     queryBuilder.andWhere(`EXISTS(${existsSubQuery})`);
 
-    // 4. Campos propios obligatorios (ajusta según tu modelo)
     queryBuilder
       .andWhere('property.title IS NOT NULL')
       .andWhere('property.description IS NOT NULL')
       .andWhere('property.price IS NOT NULL');
-
-    // 6. Aplicar filtros dinámicos (si existen)
 
     if (filters.term) {
       queryBuilder.andWhere(
@@ -594,7 +570,6 @@ export class PropertyService {
       });
     }
 
-    // Filtro por rango de área
     if (filters.min_area != null || filters.max_area != null) {
       const minArea = filters.min_area ?? 0;
       const maxArea = filters.max_area ?? 2147483647;
@@ -604,13 +579,11 @@ export class PropertyService {
       });
     }
 
-    // 7. Paginación y orden
     queryBuilder
       .take(limit || 10)
       .skip(offset || 0)
       .orderBy(`property.${order}`, 'DESC');
 
-    // 8. Ejecutar consulta
     const [properties, total] = await queryBuilder.getManyAndCount();
 
     console.log({ total, properties });
@@ -629,10 +602,8 @@ export class PropertyService {
       );
     }
 
-    // Crear el patrón de búsqueda
     const searchPattern = `%${term}%`;
 
-    // Buscar propiedades usando el operador ILike
     const [properties, total] = await this.propertyRepository.findAndCount({
       where: [
         { title: ILike(searchPattern) },
