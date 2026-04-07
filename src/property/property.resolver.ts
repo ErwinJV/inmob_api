@@ -67,14 +67,21 @@ export class PropertyResolver {
     return await this.propertyService.findAllForUserID(paginationDto, user.id);
   }
 
-  // @Auth(ValidRoles.ADMIN)
+  @Auth(ValidRoles.ADMIN, ValidRoles.AGENT)
   @Query(() => PropertiesDataResponse, {
     name: 'propertiesDashboard',
     description: 'Returns a paginated list of properties ',
   })
   async findAllDashboard(
+    @CurrentUser() user: User,
     @Args('paginationDto') paginationDto: PaginationDto,
   ): Promise<PropertiesDataResponse | undefined> {
+    if (user.roles.includes(ValidRoles.AGENT)) {
+      return await this.propertyService.findAllForUserID(
+        paginationDto,
+        user.id,
+      );
+    }
     return await this.propertyService.findAllForDashboard(paginationDto);
   }
 
