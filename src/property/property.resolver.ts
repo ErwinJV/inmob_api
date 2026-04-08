@@ -55,17 +55,17 @@ export class PropertyResolver {
     return await this.propertyService.findAll(paginationDto);
   }
 
-  @Auth(ValidRoles.ADMIN, ValidRoles.AGENT)
-  @Query(() => PropertiesDataResponse, {
-    name: 'propertiesForUser',
-    description: 'Returns a paginated list of properties for a specific user',
-  })
-  async findAllForUser(
-    @CurrentUser() user: User,
-    @Args('paginationDto') paginationDto: PaginationDto,
-  ): Promise<PropertiesDataResponse | undefined> {
-    return await this.propertyService.findAllForUserID(paginationDto, user.id);
-  }
+  // @Auth(ValidRoles.ADMIN, ValidRoles.AGENT)
+  // @Query(() => PropertiesDataResponse, {
+  //   name: 'propertiesForUser',
+  //   description: 'Returns a paginated list of properties for a specific user',
+  // })
+  // async findAllForUser(
+  //   @CurrentUser() user: User,
+  //   @Args('paginationDto') paginationDto: PaginationDto,
+  // ): Promise<PropertiesDataResponse | undefined> {
+  //   return await this.propertyService.findAllForUserID(paginationDto, user.id);
+  // }
 
   @Auth(ValidRoles.ADMIN, ValidRoles.AGENT)
   @Query(() => PropertiesDataResponse, {
@@ -76,7 +76,7 @@ export class PropertyResolver {
     @CurrentUser() user: User,
     @Args('paginationDto') paginationDto: PaginationDto,
   ): Promise<PropertiesDataResponse | undefined> {
-    if (user.roles.includes(ValidRoles.AGENT)) {
+    if (user.roles.includes(`'ADMIN'`)) {
       return await this.propertyService.findAllForUserID(
         paginationDto,
         user.id,
