@@ -510,7 +510,7 @@ export class PropertyService {
     paginationDto: PaginationDto,
     filters: PropertyFilterInput,
   ): Promise<{ total: number; properties: Property[] }> {
-    const { limit, offset, order = 'created_at' } = paginationDto;
+    const { limit, offset, order = 'updated_at' } = paginationDto;
 
     console.log({ filters, paginationDto });
 
