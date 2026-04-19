@@ -22,10 +22,17 @@ const isProduction = process.env.NODE_ENV === 'production';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: isProduction
-        ? false
-        : join(process.cwd(), 'src/schema.gql'),
-      context: ({ req }: { req: Request }) => ({ req }),
+        ? true // En producción: en memoria
+        : join(process.cwd(), 'src/schema.gql'), // En desarrollo: archivo
+      sortSchema: !isProduction,
+      playground: true,
       introspection: true,
+      context: ({ req }) => ({ req }),
+      // Configuración adicional para asegurar la generación del schema
+      buildSchemaOptions: {
+        dateScalarMode: 'timestamp',
+        numberScalarMode: 'integer',
+      },
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
