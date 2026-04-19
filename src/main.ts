@@ -21,3 +21,34 @@ async function bootstrap() {
 }
 
 bootstrap();
+
+// Exportación requerida por Vercel
+export default async function handler(req: any, res: any) {
+  const app = await NestFactory.create(AppModule);
+
+  // Misma configuración CORS que en bootstrap
+  app.enableCors({
+    // origin: process.env.AUTHORIZED_FRONTEND_DOMAIN,
+    credentials: true,
+  });
+
+  // app.useGlobalPipes(
+  //   new ValidationPipe({
+  //     whitelist: true,
+  //     forbidNonWhitelisted: true,
+  //   }),
+  // );
+
+  await app.init();
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+  const instance = app.getHttpAdapter().getInstance();
+
+  if (instance && typeof instance === 'function') {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return instance(req, res);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return app.getHttpAdapter().getInstance()(req, res);
+}
