@@ -12,6 +12,7 @@ import { FilesModule } from './files/files.module';
 import { PromptAiModule } from './prompt-ai/prompt-ai.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { RevalidationModule } from './revalidation/revalidation.module';
+import { GraphQLDateTime } from 'graphql-scalars';
 
 const isProduction = process.env.NODE_ENV === 'production';
 @Module({
@@ -30,8 +31,10 @@ const isProduction = process.env.NODE_ENV === 'production';
 
       // Configuración adicional para asegurar la generación del schema
       buildSchemaOptions: {
-        dateScalarMode: 'timestamp',
-        numberScalarMode: 'integer',
+        dateScalarMode: 'timestamp', // Esto maneja automáticamente los Date
+      },
+      resolvers: {
+        DateTime: GraphQLDateTime, // Registrar el scalar
       },
       context: ({ req }: { req: Request }) => ({ req }),
     }),

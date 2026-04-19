@@ -1,6 +1,14 @@
 import { ObjectType, Field } from '@nestjs/graphql';
 import { Property } from '../../property/entities/property.entity';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { GraphQLDateTime } from 'graphql-scalars';
 
 @Entity()
 @ObjectType()
@@ -48,17 +56,22 @@ export class User {
   @Column({ type: 'varchar', length: 300, nullable: true })
   profile_picture_url?: string;
 
-  @Field(() => BigInt, {
-    description: `Users's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"`,
+  @Field(() => GraphQLDateTime, {
+    description: `Users's date creation in ISO format. Example: "2023-01-01T00:00:00.000Z"`,
   })
-  @Column({ type: 'bigint', default: () => 'EXTRACT(EPOCH FROM NOW()) * 1000' })
-  created_at: number;
+  @CreateDateColumn({
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  created_at: Date;
 
-  @Field(() => BigInt, {
-    description: `Property's last update date in epoch format (milliseconds) by Date.now(). Example: "1519211809934"`,
+  @Field(() => GraphQLDateTime, {
+    description: `User's last update date in ISO format. Example: "2023-01-01T00:00:00.000Z"`,
   })
-  @Column({ type: 'bigint', default: () => 'EXTRACT(EPOCH FROM NOW()) * 1000' })
-  updated_at: number;
+  @UpdateDateColumn({
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updated_at: Date;
 
   @Field(() => [Property], {
     nullable: true,

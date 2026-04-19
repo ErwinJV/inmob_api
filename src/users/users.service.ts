@@ -25,7 +25,7 @@ export class UsersService {
   ) {}
 
   async create(createUserInput: CreateUserInput) {
-    const date = Date.now();
+    const date = new Date();
     if (
       !createUserInput.name ||
       !createUserInput.last_name ||
@@ -41,8 +41,6 @@ export class UsersService {
       const user = this.userRepository.create({
         ...createUserInput,
         password: hashedPassword,
-        created_at: date,
-        updated_at: date,
       });
 
       const newUser = await this.userRepository.save(user);
@@ -127,7 +125,6 @@ export class UsersService {
 
         return await this.userRepository.update(id, {
           ...updateUserInput,
-          updated_at: Date.now(),
         });
       } else {
         return await this.userRepository.update(id, {

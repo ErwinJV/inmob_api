@@ -59,7 +59,6 @@ export class PropertyService {
       .replace(/[-\s]+/g, '-')
       .toLowerCase();
 
-    const date = Date.now();
     console.log(user);
     try {
       const property = this.propertyRepository.create({
@@ -67,8 +66,6 @@ export class PropertyService {
         slug,
 
         userId: user.id,
-        created_at: date,
-        updated_at: date,
       });
 
       const userResponse = await this.propertyRepository.save(property);
@@ -283,9 +280,7 @@ export class PropertyService {
         const response = await this.propertyRepository.update(id, {
           ...updatePropertyInput,
           slug,
-          updated_at: Date.now(),
         });
-        console.log({ slug });
 
         await this.revalidationService.notifyFrontend('properties', 'UPDATE');
         return response;
