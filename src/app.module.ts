@@ -40,7 +40,7 @@ const isProduction = process.env.NODE_ENV === 'production';
       url: process.env.DATABASE_URL,
       entities: [__dirname + '/**/*/.entity.{.ts,.js}'],
       autoLoadEntities: true,
-      synchronize: false,
+      synchronize: isProduction ? false : true,
       retryDelay: 3000,
       retryAttempts: 3,
 

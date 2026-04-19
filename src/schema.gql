@@ -2,195 +2,16 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type PropertyImage {
-  """"""
-  id: ID!
-  property: Property!
-  url: String!
-}
-
-type PropertyVideo {
-  """"""
-  id: ID!
-  property: Property!
-  url: String!
-}
-
-type PropertyImage360 {
-  """"""
-  id: ID!
-  property: Property!
-  url: String!
-}
-
-type PropertyVirtualTour {
-  """"""
-  id: ID!
-  property: Property!
-  url: String!
-}
-
-type Property {
+input AuthInput {
   """
-  Property's id (uuid). Example: "f7d27564-939c-42f2-90f8-ee8eece4bc8c"
-  """
-  id: ID!
-
-  """
-  Property's title. Max character length: 25, Example: "Apartamento en Buena Vista. "
-  """
-  title: String!
-
-  """
-  Property's slug, generate based of the title property. Max character length: 25, Example: "Apartamento-en-Buena-Vista"
-  """
-  slug: String!
-
-  """Area in square meters of the property"""
-  area: Int!
-
-  """
-  Property's status. Example: "SALE"
-  """
-  status: PropertyStatus!
-
-  """
-  Property's type. Example: "HOUSE"
-  """
-  type: PropertyType!
-
-  """
-  Property's description. Max character length: 125, Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc." 
-  """
-  description: String!
-
-  """
-  Property's price. Example: "125000.00"
-  """
-  price: Float!
-
-  """
-  Property's user id creator. Example: "1b8800a2-2385-403a-893b-3eba76ba4608" 
-  """
-  userId: String!
-
-  """Property's place. Example: "Av. Bella Vista Maracaibo, Zulia'"""
-  place: String!
-
-  """
-  Property's latitude (Google Maps). Example: "41.40338"
-  """
-  lat: Float
-
-  """
-  Property's longitude (Google Maps). Example: "2.17403"
-  """
-  long: Float
-
-  """
-  Property's total bathrooms. Example: "2"
-  """
-  num_bathrooms: Int
-
-  """
-  Property's total bedrooms. Example: "4"
-  """
-  num_bedrooms: Int
-
-  """
-  Property's total pools. Example: "1"
-  """
-  num_pools: Int
-
-  """
-  Property's total parkings lot. Example: "2"
-  """
-  num_parking_lot: Int
-
-  """
-  Property's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
-  """
-  created_at: Float
-
-  """
-  Property's last update date in epoch format (milliseconds) by Date.now() method. Example: "1519211809934"
-  """
-  updated_at: Float
-
-  """Property's user creator"""
-  user: User!
-  images: [PropertyImage!]
-  images360: [PropertyImage360!]
-  videos: [PropertyVideo!]
-  virtualTour: [PropertyVirtualTour!]
-
-  """
-  Property's main picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
-  """
-  main_picture_url: String
-}
-
-"""Status of property"""
-enum PropertyStatus {
-  SALE
-  RENT
-}
-
-"""Type of property"""
-enum PropertyType {
-  APARTMENT
-  HOUSE
-}
-
-type User {
-  """
-  User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695"
-  """
-  id: String!
-
-  """
-  User's name: Example: "John"
-  """
-  name: String!
-
-  """
-  User's last name: Example: "Walker"
-  """
-  last_name: String!
-
-  """
-  User's email, must be unique. Example: "example@email.com"
+  User's email, Example: "example@email.com". This field is required | Maximum character length of 25 | Must be unique
   """
   email: String!
 
-  """User's password. Must be encrypted"""
+  """
+  User's password, Example: "Ghw~j'#>£F|A7FN=OS:6=/q27". This field is required | Maximum character length of 40
+  """
   password: String!
-
-  """
-  Boolean data that shows whether the user is active or has been suspended."
-  """
-  is_active: Boolean!
-
-  """Contains the user roles: Array  Example: ['USER', 'ADMIN']"""
-  roles: [String!]!
-
-  """
-  User's profile picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg"
-  """
-  profile_picture_url: String
-
-  """
-  Users's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
-  """
-  created_at: Float!
-
-  """
-  Property's last update date in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
-  """
-  updated_at: Float!
-
-  """Array that contains Properties created by the user"""
-  properties: [Property!]
 }
 
 type AuthResponse {
@@ -204,46 +25,312 @@ type AuthVerificationResponse {
   verification: Boolean!
 }
 
-type UsersDataResponse {
-  """
-  Total users registered in the database, this data is useful for pagination
-  """
-  total: Int!
-
-  """Users, paginated by default in 10"""
-  users: [User!]!
+input CreateMultiplePropertiesInput {
+  properties: [CreatePropertyInput!]!
 }
 
-type UserUpdateResponse {
-  affected: Int
+input CreatePropertyInput {
+  """Area in square meters of the property"""
+  area: Int!
+
+  """
+  Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420 
+  """
+  description: String!
+
+  """Property place latitude"""
+  lat: Float!
+
+  """Property place longitude"""
+  long: Float!
+
+  """
+  Property's main picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
+  """
+  main_picture_url: String
+
+  """
+  Property's total bathrooms. Example: "2"
+  """
+  num_bathrooms: Int
+
+  """
+  Property's total bedrooms. Example: "4"
+  """
+  num_bedrooms: Int
+
+  """
+  Property's total parkings lot. Example: "2"
+  """
+  num_parking_lot: Int
+
+  """
+  Property's total pools. Example: "1"
+  """
+  num_pools: Int
+
+  """
+  Property's place. Example: "Av. Bella Vista Maracaibo, Zulia". This field is required | Maximum character length of 125
+  """
+  place: String!
+
+  """Property's price. Example: "125000.00". This field is required"""
+  price: Float!
+
+  """Property's status. Example: "SALE". This field is required"""
+  status: PropertyStatus!
+
+  """
+  Property's title, Example: "Apartamento en Buena Vista". This field is required | Maximum character length of 80
+  """
+  title: String!
+
+  """Property's type. Example: "HOUSE". This field is required"""
+  type: PropertyType!
+}
+
+input CreateUserInput {
+  """
+  User's email, Example: "example@email.com". This field is required | Maximum character length of 25 | Must be unique
+  """
+  email: String!
+
+  """
+  User's last name, Example: "Walker". This field is required | Maximum character length of 25
+  """
+  last_name: String!
+
+  """
+  User's name, Example: "John". This field is required | Maximum character length of 25 
+  """
+  name: String!
+
+  """
+  User's password, Example: "Ghw~j'#>£F|A7FN=OS:6=/q27". This field is required | Maximum character length of 40
+  """
+  password: String!
+
+  """
+  User's profile picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
+  """
+  profile_picture_url: String
+
+  """
+  User's roles, example: "['ADMIN',"USER']". This value is optional | If no value is provided, its default value will be "['USER']"
+  """
+  roles: [String!]
+}
+
+type Mutation {
+  """Creates a multiple fake properties for development testing"""
+  createMultipleProperties(input: CreateMultiplePropertiesInput!): [Property!]!
+
+  """
+  Create a property by createPropertyInput params, authorization bearer token is required in the header request
+  """
+  createProperty(createPropertyInput: CreatePropertyInput!): Property!
+
+  """
+  Create a user by createUserInput params, authorization bearer token is required in the header request
+  """
+  createUser(createUserInput: CreateUserInput!): User!
+  login(authInput: AuthInput!): AuthResponse!
+
+  """
+  Remove a single property by required id, authorization bearer token is required in the header request
+  """
+  removeProperty(id: String!): Property!
+
+  """
+  Remove a single user required by a required id (uuid), authorization bearer token is required in the header request
+  """
+  removeUser(id: String!): User!
+
+  """
+  Update a single property by updatePropertyInput params and required id, authorization bearer token is required in the header request
+  """
+  updateProperty(updatePropertyInput: UpdatePropertyInput!): PropertyUpdateResponse!
+
+  """
+  Update a single user by updateUserParams and required id (uuid), authorization bearer token is required in the header request
+  """
+  updateUser(updateUserInput: UpdateUserInput!): UserUpdateResponse!
+}
+
+input PaginationDto {
+  limit: Int
+  offset: Int
+  order: String
 }
 
 type PropertiesDataResponse {
-  total: Int!
   properties: [Property!]!
+  total: Int!
+}
+
+type Property {
+  """Area in square meters of the property"""
+  area: Int!
+
+  """
+  Property's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
+  """
+  created_at: Int
+
+  """
+  Property's description. Max character length: 125, Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc." 
+  """
+  description: String!
+
+  """
+  Property's id (uuid). Example: "f7d27564-939c-42f2-90f8-ee8eece4bc8c"
+  """
+  id: ID!
+  images: [PropertyImage!]
+  images360: [PropertyImage360!]
+
+  """
+  Property's latitude (Google Maps). Example: "41.40338"
+  """
+  lat: Float
+
+  """
+  Property's longitude (Google Maps). Example: "2.17403"
+  """
+  long: Float
+
+  """
+  Property's main picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
+  """
+  main_picture_url: String
+
+  """
+  Property's total bathrooms. Example: "2"
+  """
+  num_bathrooms: Int
+
+  """
+  Property's total bedrooms. Example: "4"
+  """
+  num_bedrooms: Int
+
+  """
+  Property's total parkings lot. Example: "2"
+  """
+  num_parking_lot: Int
+
+  """
+  Property's total pools. Example: "1"
+  """
+  num_pools: Int
+
+  """Property's place. Example: "Av. Bella Vista Maracaibo, Zulia'"""
+  place: String!
+
+  """
+  Property's price. Example: "125000.00"
+  """
+  price: Float!
+
+  """
+  Property's slug, generate based of the title property. Max character length: 25, Example: "Apartamento-en-Buena-Vista"
+  """
+  slug: String!
+
+  """
+  Property's status. Example: "SALE"
+  """
+  status: PropertyStatus!
+
+  """
+  Property's title. Max character length: 25, Example: "Apartamento en Buena Vista. "
+  """
+  title: String!
+
+  """
+  Property's type. Example: "HOUSE"
+  """
+  type: PropertyType!
+
+  """
+  Property's last update date in epoch format (milliseconds) by Date.now() method. Example: "1519211809934"
+  """
+  updated_at: Int
+
+  """Property's user creator"""
+  user: User!
+
+  """
+  Property's user id creator. Example: "1b8800a2-2385-403a-893b-3eba76ba4608" 
+  """
+  userId: String!
+  videos: [PropertyVideo!]
+  virtualTour: [PropertyVirtualTour!]
+}
+
+input PropertyFilterInput {
+  max_area: Float
+  min_area: Float
+  num_bathrooms: Int
+  num_bedrooms: Int
+  num_parking_lot: Int
+  status: PropertyStatus
+  term: String
+  type: PropertyType
+}
+
+type PropertyImage {
+  """"""
+  id: ID!
+  property: Property!
+  url: String!
+}
+
+type PropertyImage360 {
+  """"""
+  id: ID!
+  property: Property!
+  url: String!
+}
+
+"""Status of property"""
+enum PropertyStatus {
+  RENT
+  SALE
+}
+
+"""Type of property"""
+enum PropertyType {
+  APARTMENT
+  HOUSE
 }
 
 type PropertyUpdateResponse {
   affected: Int
 }
 
-type Query {
-  """
-  Return a paginated list of users, authorization bearer token is required in the header request
-  """
-  users(paginationDto: PaginationDto!): UsersDataResponse!
+type PropertyVideo {
+  """"""
+  id: ID!
+  property: Property!
+  url: String!
+}
 
-  """
-  Return a single user required by id (uuid), authorization bearer token is required in the header request
-  """
-  user(id: String!): User!
+type PropertyVirtualTour {
+  """"""
+  id: ID!
+  property: Property!
+  url: String!
+}
+
+type Query {
+  filterProperties(filters: PropertyFilterInput, paginationDto: PaginationDto!): PropertiesDataResponse!
 
   """Returns a paginated list of properties"""
   properties(paginationDto: PaginationDto!): PropertiesDataResponse!
 
   """Returns a paginated list of properties """
   propertiesDashboard(paginationDto: PaginationDto!): PropertiesDataResponse!
-  filterProperties(paginationDto: PaginationDto!, filters: PropertyFilterInput): PropertiesDataResponse!
 
   """Return a single property by required term (property id)"""
   property(term: String!): Property!
@@ -255,207 +342,32 @@ type Query {
   Search properties by term (title, description, place) and pagination params
   """
   searchProperties(paginationDto: PaginationDto!, term: String!): PropertiesDataResponse!
+
+  """
+  Return a single user required by id (uuid), authorization bearer token is required in the header request
+  """
+  user(id: String!): User!
+
+  """
+  Return a paginated list of users, authorization bearer token is required in the header request
+  """
+  users(paginationDto: PaginationDto!): UsersDataResponse!
   verifyAuthToken: AuthVerificationResponse!
 }
 
-input PaginationDto {
-  limit: Int
-  offset: Int
-  order: String
-}
-
-input PropertyFilterInput {
-  term: String
-  type: PropertyType
-  status: PropertyStatus
-  num_bathrooms: Int
-  num_bedrooms: Int
-  num_parking_lot: Int
-  min_area: Float
-  max_area: Float
-}
-
-type Mutation {
-  """
-  Create a user by createUserInput params, authorization bearer token is required in the header request
-  """
-  createUser(createUserInput: CreateUserInput!): User!
+input UpdatePropertyInput {
+  """Area in square meters of the property"""
+  area: Int
 
   """
-  Update a single user by updateUserParams and required id (uuid), authorization bearer token is required in the header request
+  Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420 
   """
-  updateUser(updateUserInput: UpdateUserInput!): UserUpdateResponse!
-
-  """
-  Remove a single user required by a required id (uuid), authorization bearer token is required in the header request
-  """
-  removeUser(id: String!): User!
-
-  """
-  Create a property by createPropertyInput params, authorization bearer token is required in the header request
-  """
-  createProperty(createPropertyInput: CreatePropertyInput!): Property!
-
-  """
-  Update a single property by updatePropertyInput params and required id, authorization bearer token is required in the header request
-  """
-  updateProperty(updatePropertyInput: UpdatePropertyInput!): PropertyUpdateResponse!
-
-  """
-  Remove a single property by required id, authorization bearer token is required in the header request
-  """
-  removeProperty(id: String!): Property!
-
-  """Creates a multiple fake properties for development testing"""
-  createMultipleProperties(input: CreateMultiplePropertiesInput!): [Property!]!
-  login(authInput: AuthInput!): AuthResponse!
-}
-
-input CreateUserInput {
-  """
-  User's name, Example: "John". This field is required | Maximum character length of 25 
-  """
-  name: String!
-
-  """
-  User's last name, Example: "Walker". This field is required | Maximum character length of 25
-  """
-  last_name: String!
-
-  """
-  User's email, Example: "example@email.com". This field is required | Maximum character length of 25 | Must be unique
-  """
-  email: String!
-
-  """
-  User's password, Example: "Ghw~j'#>£F|A7FN=OS:6=/q27". This field is required | Maximum character length of 40
-  """
-  password: String!
-
-  """
-  User's roles, example: "['ADMIN',"USER']". This value is optional | If no value is provided, its default value will be "['USER']"
-  """
-  roles: [String!]
-
-  """
-  User's profile picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
-  """
-  profile_picture_url: String
-}
-
-input UpdateUserInput {
-  """
-  User's name, Example: "John". This field is required | Maximum character length of 25 
-  """
-  name: String
-
-  """
-  User's last name, Example: "Walker". This field is required | Maximum character length of 25
-  """
-  last_name: String
-
-  """
-  User's email, Example: "example@email.com". This field is required | Maximum character length of 25 | Must be unique
-  """
-  email: String
-
-  """
-  User's password, Example: "Ghw~j'#>£F|A7FN=OS:6=/q27". This field is required | Maximum character length of 40
-  """
-  password: String
-
-  """
-  User's roles, example: "['ADMIN',"USER']". This value is optional | If no value is provided, its default value will be "['USER']"
-  """
-  roles: [String!]
-
-  """
-  User's profile picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
-  """
-  profile_picture_url: String
+  description: String
 
   """
   User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695". This field is required
   """
   id: String!
-}
-
-input CreatePropertyInput {
-  """
-  Property's title, Example: "Apartamento en Buena Vista". This field is required | Maximum character length of 80
-  """
-  title: String!
-
-  """Property's status. Example: "SALE". This field is required"""
-  status: PropertyStatus!
-
-  """Property's type. Example: "HOUSE". This field is required"""
-  type: PropertyType!
-
-  """
-  Property's place. Example: "Av. Bella Vista Maracaibo, Zulia". This field is required | Maximum character length of 125
-  """
-  place: String!
-
-  """Property place latitude"""
-  lat: Float!
-
-  """Property place longitude"""
-  long: Float!
-
-  """
-  Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420 
-  """
-  description: String!
-
-  """Area in square meters of the property"""
-  area: Int!
-
-  """Property's price. Example: "125000.00". This field is required"""
-  price: Float!
-
-  """
-  Property's total bathrooms. Example: "2"
-  """
-  num_bathrooms: Int
-
-  """
-  Property's total bedrooms. Example: "4"
-  """
-  num_bedrooms: Int
-
-  """
-  Property's total pools. Example: "1"
-  """
-  num_pools: Int
-
-  """
-  Property's total parkings lot. Example: "2"
-  """
-  num_parking_lot: Int
-
-  """
-  Property's main picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
-  """
-  main_picture_url: String
-}
-
-input UpdatePropertyInput {
-  """
-  Property's title, Example: "Apartamento en Buena Vista". This field is required | Maximum character length of 80
-  """
-  title: String
-
-  """Property's status. Example: "SALE". This field is required"""
-  status: PropertyStatus
-
-  """Property's type. Example: "HOUSE". This field is required"""
-  type: PropertyType
-
-  """
-  Property's place. Example: "Av. Bella Vista Maracaibo, Zulia". This field is required | Maximum character length of 125
-  """
-  place: String
 
   """Property place latitude"""
   lat: Float
@@ -464,15 +376,9 @@ input UpdatePropertyInput {
   long: Float
 
   """
-  Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420 
+  Property's main picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
   """
-  description: String
-
-  """Area in square meters of the property"""
-  area: Int
-
-  """Property's price. Example: "125000.00". This field is required"""
-  price: Float
+  main_picture_url: String
 
   """
   Property's total bathrooms. Example: "2"
@@ -485,38 +391,133 @@ input UpdatePropertyInput {
   num_bedrooms: Int
 
   """
-  Property's total pools. Example: "1"
-  """
-  num_pools: Int
-
-  """
   Property's total parkings lot. Example: "2"
   """
   num_parking_lot: Int
 
   """
-  Property's main picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
+  Property's total pools. Example: "1"
   """
-  main_picture_url: String
+  num_pools: Int
+
+  """
+  Property's place. Example: "Av. Bella Vista Maracaibo, Zulia". This field is required | Maximum character length of 125
+  """
+  place: String
+
+  """Property's price. Example: "125000.00". This field is required"""
+  price: Float
+
+  """Property's status. Example: "SALE". This field is required"""
+  status: PropertyStatus
+
+  """
+  Property's title, Example: "Apartamento en Buena Vista". This field is required | Maximum character length of 80
+  """
+  title: String
+
+  """Property's type. Example: "HOUSE". This field is required"""
+  type: PropertyType
+}
+
+input UpdateUserInput {
+  """
+  User's email, Example: "example@email.com". This field is required | Maximum character length of 25 | Must be unique
+  """
+  email: String
 
   """
   User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695". This field is required
   """
   id: String!
-}
 
-input CreateMultiplePropertiesInput {
-  properties: [CreatePropertyInput!]!
-}
+  """
+  User's last name, Example: "Walker". This field is required | Maximum character length of 25
+  """
+  last_name: String
 
-input AuthInput {
   """
-  User's email, Example: "example@email.com". This field is required | Maximum character length of 25 | Must be unique
+  User's name, Example: "John". This field is required | Maximum character length of 25 
   """
-  email: String!
+  name: String
 
   """
   User's password, Example: "Ghw~j'#>£F|A7FN=OS:6=/q27". This field is required | Maximum character length of 40
   """
+  password: String
+
+  """
+  User's profile picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg". This value is optional
+  """
+  profile_picture_url: String
+
+  """
+  User's roles, example: "['ADMIN',"USER']". This value is optional | If no value is provided, its default value will be "['USER']"
+  """
+  roles: [String!]
+}
+
+type User {
+  """
+  Users's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
+  """
+  created_at: Int!
+
+  """
+  User's email, must be unique. Example: "example@email.com"
+  """
+  email: String!
+
+  """
+  User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695"
+  """
+  id: String!
+
+  """
+  Boolean data that shows whether the user is active or has been suspended."
+  """
+  is_active: Boolean!
+
+  """
+  User's last name: Example: "Walker"
+  """
+  last_name: String!
+
+  """
+  User's name: Example: "John"
+  """
+  name: String!
+
+  """User's password. Must be encrypted"""
   password: String!
+
+  """
+  User's profile picture URL. Example: "https://res.cloudinary.com/demo/image/upload/v1312461204/sample.jpg"
+  """
+  profile_picture_url: String
+
+  """Array that contains Properties created by the user"""
+  properties: [Property!]
+
+  """Contains the user roles: Array  Example: ['USER', 'ADMIN']"""
+  roles: [String!]!
+
+  """
+  Property's last update date in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
+  """
+  updated_at: Int!
+}
+
+type UserUpdateResponse {
+  affected: Int
+}
+
+type UsersDataResponse {
+  """
+  Total users registered in the database, this data is useful for pagination
+  """
+  total: Int!
+
+  """Users, paginated by default in 10"""
+  users: [User!]!
 }
