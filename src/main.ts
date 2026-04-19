@@ -24,31 +24,41 @@ bootstrap();
 
 // Exportación requerida por Vercel
 export default async function handler(req: any, res: any) {
-  const app = await NestFactory.create(AppModule);
+  try {
+    console.log('🚀 Iniciando handler de Vercel...');
 
-  // Misma configuración CORS que en bootstrap
-  app.enableCors({
-    // origin: process.env.AUTHORIZED_FRONTEND_DOMAIN,
-    credentials: true,
-  });
+    const app = await NestFactory.create(AppModule);
+    console.log('✅ App creada correctamente');
 
-  // app.useGlobalPipes(
-  //   new ValidationPipe({
-  //     whitelist: true,
-  //     forbidNonWhitelisted: true,
-  //   }),
-  // );
+    app.enableCors({
+      credentials: true,
+    });
 
-  await app.init();
+    await app.init();
+    console.log('✅ App inicializada');
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-  const instance = app.getHttpAdapter().getInstance();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const instance = app.getHttpAdapter().getInstance();
 
-  if (instance && typeof instance === 'function') {
+    if (instance && typeof instance === 'function') {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+      return instance(req, res);
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return instance(req, res);
+    return app.getHttpAdapter().getInstance()(req, res);
+  } catch (error) {
+    console.error('❌ Error en handler:', error);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    res.status(500).json({
+      error: 'Internal Server Error',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      message: (error as Error).message,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+      stack:
+        process.env.NODE_ENV === 'development'
+          ? (error as Error)?.stack
+          : undefined,
+    });
   }
-
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return app.getHttpAdapter().getInstance()(req, res);
 }

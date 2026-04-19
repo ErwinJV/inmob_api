@@ -13,6 +13,7 @@ import { PromptAiModule } from './prompt-ai/prompt-ai.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { RevalidationModule } from './revalidation/revalidation.module';
 
+const isProduction = process.env.NODE_ENV === 'production';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -20,23 +21,41 @@ import { RevalidationModule } from './revalidation/revalidation.module';
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      context: ({ req }: { req: Request }) => ({ req }),
+      autoSchemaFile: isProduction
+        ? true // En producción: en memoria
+        : join(process.cwd(), 'src/schema.gql'), // En desarrollo: archivo
+      sortSchema: !isProduction,
+      playground: true,
       introspection: true,
+
+      // Configuración adicional para asegurar la generación del schema
+      buildSchemaOptions: {
+        dateScalarMode: 'timestamp',
+        numberScalarMode: 'integer',
+      },
+      context: ({ req }: { req: Request }) => ({ req }),
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
       entities: [__dirname + '/**/*/.entity.{.ts,.js}'],
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
       retryDelay: 3000,
-      retryAttempts: 10,
-      ssl: true,
+      retryAttempts: 3,
+
+      ssl: isProduction
+        ? {
+            rejectUnauthorized: false,
+          }
+        : false,
       extra: {
         options: process.env.DB_ENDPOINT_ID
           ? `project=${process.env.DB_ENDPOINT_ID}`
           : 'project=ep-wispy-tooth-ahdjh5gr',
+        max: 1, // Solo 1 conexión para serverless
+        connectionTimeoutMillis: 10000,
+        idleTimeoutMillis: 10000,
       },
     }),
     UsersModule,
