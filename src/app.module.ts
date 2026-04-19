@@ -27,12 +27,13 @@ const isProduction = process.env.NODE_ENV === 'production';
       sortSchema: !isProduction,
       playground: true,
       introspection: true,
-      context: ({ req }) => ({ req }),
+
       // Configuración adicional para asegurar la generación del schema
       buildSchemaOptions: {
         dateScalarMode: 'timestamp',
         numberScalarMode: 'integer',
       },
+      context: ({ req }: { req: Request }) => ({ req }),
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
