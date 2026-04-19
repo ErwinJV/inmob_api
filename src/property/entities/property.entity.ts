@@ -119,14 +119,14 @@ export class Property {
   @Column({ type: 'smallint', nullable: true })
   num_parking_lot?: number;
 
-  @Field(() => Number, {
+  @Field(() => BigInt, {
     description: `Property's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"`,
     nullable: true,
   })
   @Column({ type: 'bigint', default: () => 'EXTRACT(EPOCH FROM NOW()) * 1000' })
   created_at: number;
 
-  @Field(() => Number, {
+  @Field(() => BigInt, {
     description: `Property's last update date in epoch format (milliseconds) by Date.now() method. Example: "1519211809934"`,
     nullable: true,
   })
