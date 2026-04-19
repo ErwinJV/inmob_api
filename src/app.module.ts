@@ -22,8 +22,8 @@ const isProduction = process.env.NODE_ENV === 'production';
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: isProduction
-        ? join(process.cwd(), 'src/schema.gql')
-        : false,
+        ? false
+        : join(process.cwd(), 'src/schema.gql'),
       context: ({ req }: { req: Request }) => ({ req }),
       introspection: true,
     }),
