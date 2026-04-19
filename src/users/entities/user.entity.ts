@@ -48,13 +48,13 @@ export class User {
   @Column({ type: 'varchar', length: 300, nullable: true })
   profile_picture_url?: string;
 
-  @Field(() => Number, {
+  @Field(() => BigInt, {
     description: `Users's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"`,
   })
   @Column({ type: 'bigint', default: () => 'EXTRACT(EPOCH FROM NOW()) * 1000' })
   created_at: number;
 
-  @Field(() => Number, {
+  @Field(() => BigInt, {
     description: `Property's last update date in epoch format (milliseconds) by Date.now(). Example: "1519211809934"`,
   })
   @Column({ type: 'bigint', default: () => 'EXTRACT(EPOCH FROM NOW()) * 1000' })
