@@ -121,6 +121,11 @@ input CreateUserInput {
   roles: [String!]
 }
 
+"""
+A date-time string at UTC, such as 2007-12-03T10:15:30Z, compliant with the `date-time` format outlined in section 5.6 of the RFC 3339 profile of the ISO 8601 standard for representation of dates and times using the Gregorian calendar.
+"""
+scalar DateTime
+
 type Mutation {
   """Creates a multiple fake properties for development testing"""
   createMultipleProperties(input: CreateMultiplePropertiesInput!): [Property!]!
@@ -173,9 +178,9 @@ type Property {
   area: Int!
 
   """
-  Property's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
+  Property's creation date in ISO format. Example: "2023-01-01T00:00:00.000Z"
   """
-  created_at: Int
+  created_at: DateTime
 
   """
   Property's description. Max character length: 125, Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc." 
@@ -253,9 +258,9 @@ type Property {
   type: PropertyType!
 
   """
-  Property's last update date in epoch format (milliseconds) by Date.now() method. Example: "1519211809934"
+  Property's last update date in ISO format. Example: "2023-01-01T00:00:00.000Z"
   """
-  updated_at: Int
+  updated_at: DateTime
 
   """Property's user creator"""
   user: User!
@@ -459,9 +464,9 @@ input UpdateUserInput {
 
 type User {
   """
-  Users's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
+  Users's date creation in ISO format. Example: "2023-01-01T00:00:00.000Z"
   """
-  created_at: Int!
+  created_at: DateTime!
 
   """
   User's email, must be unique. Example: "example@email.com"
@@ -503,9 +508,9 @@ type User {
   roles: [String!]!
 
   """
-  Property's last update date in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
+  User's last update date in ISO format. Example: "2023-01-01T00:00:00.000Z"
   """
-  updated_at: Int!
+  updated_at: DateTime!
 }
 
 type UserUpdateResponse {

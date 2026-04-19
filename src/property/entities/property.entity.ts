@@ -1,4 +1,5 @@
 import { ObjectType, Field, Int, Float, ID } from '@nestjs/graphql';
+import { GraphQLDateTime } from 'graphql-scalars';
 import { User } from '../../users/entities/user.entity';
 import {
   Column,
@@ -6,6 +7,8 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { PropertyType } from '../enums/property-type.enum';
 import { PropertyStatus } from '../enums/property-status.enum';
@@ -119,19 +122,24 @@ export class Property {
   @Column({ type: 'smallint', nullable: true })
   num_parking_lot?: number;
 
-  @Field(() => BigInt, {
-    description: `Property's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"`,
+  @Field(() => GraphQLDateTime, {
+    description: `Property's creation date in ISO format. Example: "2023-01-01T00:00:00.000Z"`,
     nullable: true,
   })
-  @Column({ type: 'bigint', default: () => 'EXTRACT(EPOCH FROM NOW()) * 1000' })
-  created_at: number;
+  @CreateDateColumn({
+    default: () => 'CURRENT_TIMESTAMP',
+  })
+  created_at: Date;
 
-  @Field(() => BigInt, {
-    description: `Property's last update date in epoch format (milliseconds) by Date.now() method. Example: "1519211809934"`,
+  @Field(() => GraphQLDateTime, {
+    description: `Property's last update date in ISO format. Example: "2023-01-01T00:00:00.000Z"`,
     nullable: true,
   })
-  @Column({ type: 'bigint', default: () => 'EXTRACT(EPOCH FROM NOW()) * 1000' })
-  updated_at: number;
+  @UpdateDateColumn({
+    default: () => 'CURRENT_TIMESTAMP',
+    onUpdate: 'CURRENT_TIMESTAMP',
+  })
+  updated_at: Date;
 
   @Field(() => User, {
     description: `Property's user creator`,
