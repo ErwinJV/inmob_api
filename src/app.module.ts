@@ -13,6 +13,7 @@ import { PromptAiModule } from './prompt-ai/prompt-ai.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { RevalidationModule } from './revalidation/revalidation.module';
 
+const isProduction = process.env.NODE_ENV === 'production';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -29,14 +30,22 @@ import { RevalidationModule } from './revalidation/revalidation.module';
       url: process.env.DATABASE_URL,
       entities: [__dirname + '/**/*/.entity.{.ts,.js}'],
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
       retryDelay: 3000,
-      retryAttempts: 10,
-      ssl: true,
+      retryAttempts: 3,
+
+      ssl: isProduction
+        ? {
+            rejectUnauthorized: false,
+          }
+        : false,
       extra: {
         options: process.env.DB_ENDPOINT_ID
           ? `project=${process.env.DB_ENDPOINT_ID}`
           : 'project=ep-wispy-tooth-ahdjh5gr',
+        max: 1, // Solo 1 conexión para serverless
+        connectionTimeoutMillis: 10000,
+        idleTimeoutMillis: 10000,
       },
     }),
     UsersModule,
