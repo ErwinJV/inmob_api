@@ -123,14 +123,14 @@ export class Property {
     description: `Property's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"`,
     nullable: true,
   })
-  @Column({ type: 'numeric' })
+  @Column({ type: 'bigint', default: () => 'EXTRACT(EPOCH FROM NOW()) * 1000' })
   created_at: number;
 
   @Field(() => Number, {
     description: `Property's last update date in epoch format (milliseconds) by Date.now() method. Example: "1519211809934"`,
     nullable: true,
   })
-  @Column({ type: 'numeric' })
+  @Column({ type: 'bigint', default: () => 'EXTRACT(EPOCH FROM NOW()) * 1000' })
   updated_at: number;
 
   @Field(() => User, {
