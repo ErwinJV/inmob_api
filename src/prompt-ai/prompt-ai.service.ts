@@ -1,8 +1,8 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import OpenAI from 'openai';
 
 import { CreatePromptAiDto } from './dto/create-prompt-ai.dto';
 
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { CreatePropertyInput } from 'src/property/dto/create-property.input';
 
 import { PropertyService } from 'src/property/property.service';
@@ -16,499 +16,70 @@ export class PromptAiService {
   ) {}
 
   async parseMessageToProperty(createPromptAiDto: CreatePromptAiDto) {
-    const genAI = new GoogleGenerativeAI(
-      process.env['GOOGLE_GEMINI_AI_API_KEY'] as string,
-    );
     const { message } = createPromptAiDto;
-    const schemaGql = `# ------------------------------------------------------
-# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
-# ------------------------------------------------------
-
-type PropertyImage {
-  """
-  """
-  id: ID!
-  property: Property!
-  url: String!
-}
-
-type Property {
-  """
-  Property's id (uuid). Example: "f7d27564-939c-42f2-90f8-ee8eece4bc8c"
-  """
-  id: ID!
-
-  """
-  Property's title. Max character length: 25, Example: "Apartamento en Buena Vista. "
-  """
-  title: String!
-
-  """
-  Property's slug, generate based of the title property. Max character length: 25, Example: "Apartamento-en-Buena-Vista"
-  """
-  slug: String!
-
-  """
-  Property's status. Example: "SALE"
-  """
-  status: PropertyStatus!
-
-  """
-  Property's type. Example: "HOUSE"
-  """
-  type: PropertyType!
-
-  """
-  Property's description. Max character length: 125, Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc."
-  """
-  description: String!
-
-  """
-  Property's user id creator. Example: "1b8800a2-2385-403a-893b-3eba76ba4608"
-  """
-  userId: String!
-
-  """
-  Property's place. Example: "Av. Bella Vista Maracaibo, Zulia'
-  """
-  place: String!
-
-  """
-  Property's latitude (Google Maps). Example: "41.40338"
-  """
-  lat: Float
-
-  """
-  Property's longitude (Google Maps). Example: "2.17403"
-  """
-  long: Float
-
-  """
-  Property's total bathrooms. Example: "2"
-  """
-  num_bathrooms: Int
-
-  """
-  Property's total bedrooms. Example: "4"
-  """
-  num_bedrooms: Int
-
-  """
-  Property's total pools. Example: "1"
-  """
-  num_pools: Int
-
-  """
-  Property's total parkings lot. Example: "2"
-  """
-  num_parking_lot: Int
-
-  """
-  Property's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
-  """
-  created_at: Float
-
-  """
-  Property's last update date in epoch format (milliseconds) by Date.now() method. Example: "1519211809934"
-  """
-  updated_at: Float
-
-  """
-  Property's user creator
-  """
-  user: User!
-  images: [PropertyImage!]
-}
-
-"""
-Status of property
-"""
-enum PropertyStatus {
-  SALE
-  RENT
-}
-
-"""
-Type of property
-"""
-enum PropertyType {
-  APARTMENT
-  HOUSE
-}
-
-type User {
-  """
-  User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695"
-  """
-  id: String!
-
-  """
-  User's name: Example: "John"
-  """
-  name: String!
-
-  """
-  User's last name: Example: "Walker"
-  """
-  last_name: String!
-
-  """
-  User's email, must be unique. Example: "example@email.com"
-  """
-  email: String!
-
-  """
-  User's password. Must be encrypted
-  """
-  password: String!
-
-  """
-  Boolean data that shows whether the user is active or has been suspended."
-  """
-  is_active: Boolean!
-
-  """
-  Contains the user roles: Array  Example: ['USER', 'ADMIN']
-  """
-  roles: [String!]!
-
-  """
-  Users's date creation in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
-  """
-  created_at: Float!
-
-  """
-  Property's last update date in epoch format (milliseconds) by Date.now(). Example: "1519211809934"
-  """
-  updated_at: Float!
-
-  """
-  Array that contains Properties created by the user
-  """
-  properties: [Property!]
-}
-
-type UsersDataResponse {
-  """
-  Total users registered in the database, this data is useful for pagination
-  """
-  total: Int!
-
-  """
-  Users, paginated by default in 10
-  """
-  users: [User!]!
-}
-
-type UserUpdateResponse {
-  affected: Int
-}
-
-type AuthResponse {
-  """
-  Bearer token response, add this in your header request for several requests
-  """
-  access_token: String!
-}
-
-type AuthVerificationResponse {
-  verification: Boolean!
-}
-
-type PropertiesDataResponse {
-  total: Int!
-  properties: [Property!]!
-}
-
-type PropertyUpdateResponse {
-  affected: Int
-}
-
-type Query {
-  """
-  Return a paginated list of users, authorization bearer token is required in the header request
-  """
-  users(paginationDto: PaginationDto!): UsersDataResponse!
-
-  """
-  Return a single user required by id (uuid), authorization bearer token is required in the header request
-  """
-  user(id: String!): User!
-  verifyAuthToken: AuthVerificationResponse!
-
-  """
-  Returns a paginated list of properties
-  """
-  properties(paginationDto: PaginationDto!): PropertiesDataResponse!
-
-  """
-  Return a single property by required term (property id or slug)
-  """
-  property(term: String!): Property!
-}
-
-input PaginationDto {
-  limit: Int
-  offset: Int
-  order: String
-}
-
-type Mutation {
-  """
-  Create a user by createUserInput params, authorization bearer token is required in the header request
-  """
-  createUser(createUserInput: CreateUserInput!): User!
-
-  """
-  Update a single user by updateUserParams and required id (uuid), authorization bearer token is required in the header request
-  """
-  updateUser(updateUserInput: UpdateUserInput!): UserUpdateResponse!
-
-  """
-  Remove a single user required by a required id (uuid), authorization bearer token is required in the header request
-  """
-  removeUser(id: String!): User!
-  login(authInput: AuthInput!): AuthResponse!
-
-  """
-  Create a property by createPropertyInput params, authorization bearer token is required in the header request
-  """
-  createProperty(createPropertyInput: CreatePropertyInput!): Property!
-
-  """
-  Update a single property by updatePropertyInput params and required id, authorization bearer token is required in the header request
-  """
-  updateProperty(
-    updatePropertyInput: UpdatePropertyInput!
-  ): PropertyUpdateResponse!
-
-  """
-  Remove a single property by required id, authorization bearer token is required in the header request
-  """
-  removeProperty(id: String!): Property!
-
-  """
-  Creates a multiple fake properties for development testing
-  """
-  createMultipleProperties(input: CreateMultiplePropertiesInput!): [Property!]!
-}
-
-input CreateUserInput {
-  """
-  User's name, Example: "John". This field is required | Maximum character length of 25
-  """
-  name: String!
-
-  """
-  User's last name, Example: "Walker". This field is required | Maximum character length of 25
-  """
-  last_name: String!
-
-  """
-  User's email, Example: "example@email.com". This field is required | Maximum character length of 25 | Must be unique
-  """
-  email: String!
-
-  """
-  User's password, Example: "Ghw~j'#>£F|A7FN=OS:6=/q27". This field is required | Maximum character length of 40
-  """
-  password: String!
-
-  """
-  User's roles, example: "['ADMIN',"USER']". This value is optional | If no value is provided, its default value will be "['USER']"
-  """
-  roles: [String!]
-}
-
-input UpdateUserInput {
-  """
-  User's name, Example: "John". This field is required | Maximum character length of 25
-  """
-  name: String
-
-  """
-  User's last name, Example: "Walker". This field is required | Maximum character length of 25
-  """
-  last_name: String
-
-  """
-  User's email, Example: "example@email.com". This field is required | Maximum character length of 25 | Must be unique
-  """
-  email: String
-
-  """
-  User's password, Example: "Ghw~j'#>£F|A7FN=OS:6=/q27". This field is required | Maximum character length of 40
-  """
-  password: String
-
-  """
-  User's roles, example: "['ADMIN',"USER']". This value is optional | If no value is provided, its default value will be "['USER']"
-  """
-  roles: [String!]
-
-  """
-  User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695". This field is required
-  """
-  id: String!
-}
-
-input AuthInput {
-  """
-  User's email, Example: "example@email.com". This field is required | Maximum character length of 25 | Must be unique
-  """
-  email: String!
-
-  """
-  User's password, Example: "Ghw~j'#>£F|A7FN=OS:6=/q27". This field is required | Maximum character length of 40
-  """
-  password: String!
-}
-
-input CreatePropertyInput {
-  """
-  Property's title, Example: "Apartamento en Buena Vista". This field is required | Maximum character length of 80
-  """
-  title: String!
-
-  """
-  Property's status. Example: "SALE". This field is required
-  """
-  status: PropertyStatus!
-
-  """
-  Property's type. Example: "HOUSE". This field is required
-  """
-  type: PropertyType!
-
-  """
-  Property's place. Example: "Av. Bella Vista Maracaibo, Zulia". This field is required | Maximum character length of 125
-  """
-  place: String!
-
-  """
-  Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420
-  """
-  description: String!
-
-  """
-  Property's latitude (Google Maps). Example: "41.40338"
-  """
-  lat: Float
-
-  """
-  Property's longitude (Google Maps). Example: "2.17403"
-  """
-  long: Float
-
-  """
-  Property's total bathrooms. Example: "2"
-  """
-  num_bathrooms: Int
-
-  """
-  Property's total bedrooms. Example: "4"
-  """
-  num_bedrooms: Int
-
-  """
-  Property's total pools. Example: "1"
-  """
-  num_pools: Int
-
-  """
-  Property's total parkings lot. Example: "2"
-  """
-  num_parking_lot: Int
-}
-
-input UpdatePropertyInput {
-  """
-  Property's title, Example: "Apartamento en Buena Vista". This field is required | Maximum character length of 80
-  """
-  title: String
-
-  """
-  Property's status. Example: "SALE". This field is required
-  """
-  status: PropertyStatus
-
-  """
-  Property's type. Example: "HOUSE". This field is required
-  """
-  type: PropertyType
-
-  """
-  Property's place. Example: "Av. Bella Vista Maracaibo, Zulia". This field is required | Maximum character length of 125
-  """
-  place: String
-
-  """
-  Property's description. Example: "Apartamento amplio, con 4 habitaciones, comedor, dos banos y una sala, etc.". This field is required | Maximum character length of 420
-  """
-  description: String
-
-  """
-  Property's latitude (Google Maps). Example: "41.40338"
-  """
-  lat: Float
-
-  """
-  Property's longitude (Google Maps). Example: "2.17403"
-  """
-  long: Float
-
-  """
-  Property's total bathrooms. Example: "2"
-  """
-  num_bathrooms: Int
-
-  """
-  Property's total bedrooms. Example: "4"
-  """
-  num_bedrooms: Int
-
-  """
-  Property's total pools. Example: "1"
-  """
-  num_pools: Int
-
-  """
-  Property's total parkings lot. Example: "2"
-  """
-  num_parking_lot: Int
-
-  """
-  User's id (uuid), Example: "c2793525-56c5-4fce-8240-f2d32d9fc695". This field is required
-  """
-  id: String!
-}
-
-input CreateMultiplePropertiesInput {
-  properties: [CreatePropertyInput!]!
-}
-`;
 
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-      const result = await model.generateContent(
-        `En base a la estructura de mi schema.gql procesa el siguente mensage a un valor en objeto javascript que corresponda a la estructura de Property y pueda ser usado como parametro para la mutation createProperty, solo devuelve el objeto para parsearlo a objeto con el metodo JSON.parse(), sin ningun texto adicional, solo el objeto, y asegurate que las propiedades no excedan el limite de caracteres permitidos, esto lo puedes revisar en el texto del schema.gql
-          Mensaje: ${message}.
-          schema.gql:${schemaGql}`,
-      );
+      const query = `System: Extract clean JSON from Venezuelan Spanish WhatsApp real estate text. Match schema.
 
-      const res = result.response.text();
-      const parseProperty = this.parseMarkdownJson(res);
+Rules:
+- Output ONLY valid JSON. No markdown/text.
+- Venezuelan Spanish terms: P/E=puesto=parking, maletero=storage, cava=wine cellar, vestier=walk-in closet, cerco electrico=electric fence, hidroneumatico=water pressure system, cocina empotrada=built-in kitchen.
+- Keep Spanish for title, description, place.
+- Enums: status=SALE|RENT, type=HOUSE|APARTMENT.
+- Generate lat/long for place. Estimate if vague. Never null.
+- Price always USD. Strip $/Bs/COP/./,. Return number only.
+- Strip all emojis/special chars from output.
+- Unknown numeric fields=0. No nulls. Exclude main_picture_url.
 
-      // await this.propertyService.create(user, processProperty);
-      console.log({ parseProperty });
-      return { parseProperty };
+Title (max 125 chars):
+- Concise, descriptive. Format: "[Tipo] en [Operacion] en [Zona] - [destacado]". Ej: "Apartamento en Venta en Uracoa - 3hab 2baños"
+
+Description (max 1900 chars):
+- CRITICAL: Clean, clear, concise paragraph. Remove all noise, redundancy, contact info, and scattered formatting from raw WhatsApp text.
+- Synthesize into single flowing paragraph with only essential property details: layout, features, amenities, location, conditions.
+- Fix typos and standardize terms.
+
+Schema:
+{
+  "area": number,
+  "description": "string (max 1900, clean & concise)",
+  "lat": number,
+  "long": number,
+  "num_bathrooms": number,
+  "num_bedrooms": number,
+  "num_parking_lot": number,
+  "num_pools": number,
+  "place": "string (max 125)",
+  "price": number,
+  "status": "SALE"|"RENT",
+  "title": "string (max 125)",
+  "type": "HOUSE"|"APARTMENT"
+}
+
+Text:
+${message}`;
+
+      const openai = new OpenAI({
+        baseURL: 'https://api.deepseek.com',
+        apiKey: process.env.AI_API_KEY,
+      });
+
+      const completion = await openai.chat.completions.create({
+        messages: [{ role: 'system', content: query }],
+        model: 'deepseek-chat',
+      });
+
+      console.log(completion.choices[0].message.content);
+      return this.parseMarkdownJson(completion.choices[0].message.content);
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
   }
 
-  private parseMarkdownJson(input: string) {
-    // Expresión regular para extraer el contenido JSON
+  private parseMarkdownJson(input: string | null) {
+    if (!input) {
+      throw new Error('Input is null');
+    }
     const jsonRegex = /```json\n([\s\S]*?)\n```/;
     const match = input.match(jsonRegex);
 

@@ -3,10 +3,11 @@ import { PromptAiService } from './prompt-ai.service';
 import { PromptAiController } from './prompt-ai.controller';
 import { PropertyModule } from 'src/property/property.module';
 import { UsersModule } from 'src/users/users.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   controllers: [PromptAiController],
-  imports: [PropertyModule, UsersModule],
+  imports: [PropertyModule, UsersModule, AuthModule],
   providers: [PromptAiService],
   exports: [PromptAiModule],
 })
