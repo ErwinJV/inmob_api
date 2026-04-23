@@ -2,13 +2,8 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import OpenAI from 'openai';
 
 import { CreatePromptAiDto } from './dto/create-prompt-ai.dto';
+import { ParsedResponse } from 'src/types/prompt-ai-types';
 
-import { CreatePropertyInput } from 'src/property/dto/create-property.input';
-
-interface ParsedResponse {
-  property: CreatePropertyInput;
-  details: string;
-}
 @Injectable()
 export class PromptAiService {
   constructor() {}
