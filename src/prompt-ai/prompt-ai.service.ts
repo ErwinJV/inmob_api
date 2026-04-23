@@ -5,72 +5,79 @@ import { CreatePromptAiDto } from './dto/create-prompt-ai.dto';
 
 import { CreatePropertyInput } from 'src/property/dto/create-property.input';
 
-import { PropertyService } from 'src/property/property.service';
-import { UsersService } from 'src/users/users.service';
-
+interface ParsedResponse {
+  property: CreatePropertyInput;
+  details: string;
+}
 @Injectable()
 export class PromptAiService {
-  constructor(
-    private readonly userService: UsersService,
-    private readonly propertyService: PropertyService,
-  ) {}
+  constructor() {}
 
   async parseMessageToProperty(createPromptAiDto: CreatePromptAiDto) {
     const { message } = createPromptAiDto;
 
     try {
-      const query = `System: Extract clean JSON from Venezuelan Spanish WhatsApp real estate text. Match schema.
+      const query = `System: Extract clean JSON from Venezuelan Spanish WhatsApp text. Properties are in Maracaibo, Venezuela. Match schema.
 
 Rules:
 - Output ONLY valid JSON. No markdown/text.
 - Venezuelan Spanish terms: P/E=puesto=parking, maletero=storage, cava=wine cellar, vestier=walk-in closet, cerco electrico=electric fence, hidroneumatico=water pressure system, cocina empotrada=built-in kitchen.
-- Keep Spanish for title, description, place.
+- Keep Spanish for title, description, place. Do NOT mention Maracaibo or Zulia in description since all properties are local.
 - Enums: status=SALE|RENT, type=HOUSE|APARTMENT.
 - Price always USD. Strip $/Bs/COP/./,. Return number only.
-- Strip all emojis/special chars from output.
+- Strip emojis/special chars from output.
 - Unknown numeric fields=0. No nulls. Exclude main_picture_url.
 
-Location rules (CRITICAL):
-- ALL properties are located in Maracaibo, Zulia State, Venezuela.
-- Search for the specific neighborhood/sector mentioned in the text within Maracaibo.
-- If exact location is found, use its coordinates.
-- If location is vague or not found, use Maracaibo city center coordinates: lat=10.6427, long=-71.6125.
+Location (Maracaibo only - CRITICAL):
+- Analyze the text for spatial relationships: "cerca de", "frente a", "al lado de", "detras de", "a dos cuadras de", "por", "zona de", "sector", "urbanizacion", "conjunto residencial".
+- Identify the reference point: landmark, building, shopping center, plaza, avenue, university, hospital, or known area.
+- If the property is described relative to a reference point, estimate coordinates near that reference point.
+- If the property location is explicitly stated (address, urbanization, sector), use that directly and estimate its coordinates.
+- If multiple reference points exist, use the most specific one.
+- If location is found, set place with the address and set coordinates accordingly.
+- If location is vague and coordinates cannot be determined, set lat and long to Maracaibo center (10.6427, -71.6125) and set place to empty string.
 - NEVER return coordinates outside Maracaibo metropolitan area.
-- place field must always include "Maracaibo" or the neighborhood + "Maracaibo, Zulia".
 
 Title (max 125 chars):
-- Concise, descriptive. Format: "[Tipo] en [Operacion] en [Zona], Maracaibo - [destacado]". Ej: "Apartamento en Venta en Uracoa, Maracaibo - 3hab 2baños"
+- Base format: "[Tipo] en [Operacion] en [Lugar]"
+- If a standout feature exists (pool, large area, remodeled, luxury, beachfront), append it: "[Tipo] en [Operacion] en [Lugar] - [destacado]"
+- The destacado must be a single key feature that makes the property distinctive.
+- Keep it concise. Do not list multiple features. Do not include price or contact info.
+- If place is empty, use: "[Tipo] en [Operacion] - [destacado]"
 
 Description (max 1900 chars):
-- CRITICAL: Clean, clear, concise paragraph. Remove all noise, redundancy, contact info, and scattered formatting from raw WhatsApp text.
-- Synthesize into single flowing paragraph with only essential property details.
-- Fix typos and standardize terms.
+- Clean, concise paragraph. Remove noise, redundancy, contact info, scattered formatting.
+- Do NOT state the city or country. Focus only on property details, features, and location within Maracaibo.
 
-Schema:
+Details rules (CRITICAL):
+- Write in Spanish, using plain user language.
+- Explain what fields could not be determined precisely and why.
+- Do NOT use technical enum values like SALE, RENT, HOUSE, APARTMENT. Use: "Venta", "Alquiler", "Casa", "Apartamento".
+- If coordinates defaulted to Maracaibo center, say: "No se pudo determinar la ubicacion exacta. Se usaron coordenadas generales de Maracaibo."
+- If all fields were clear, say: "Todos los campos se determinaron correctamente."
+
+Response format (CRITICAL):
+Return a JSON object with this exact structure:
 {
-  "area": number,
-  "description": "string (max 1900, clean & concise)",
-  "lat": number,
-  "long": number,
-  "num_bathrooms": number,
-  "num_bedrooms": number,
-  "num_parking_lot": number,
-  "num_pools": number,
-  "place": "string (max 125, always includes Maracaibo)",
-  "price": number,
-  "status": "SALE"|"RENT",
-  "title": "string (max 125, includes Maracaibo)",
-  "type": "HOUSE"|"APARTMENT"
+  "property": {
+    "area": number,
+    "description": "string (max 1900)",
+    "lat": number,
+    "long": number,
+    "num_bathrooms": number,
+    "num_bedrooms": number,
+    "num_parking_lot": number,
+    "num_pools": number,
+    "place": "string (max 125, empty if coordinates defaulted)",
+    "price": number,
+    "status": "SALE"|"RENT",
+    "title": "string (max 125)",
+    "type": "HOUSE"|"APARTMENT"
+  },
+  "details": "string in Spanish with user-friendly terms only"
 }
 
-Maracaibo reference coordinates:
-- City center: 10.6427, -71.6125
-- North area (Norte): 10.6725, -71.6150
-- South area (Sur): 10.5920, -71.6200
-- East area (Este): 10.6500, -71.5800
-- West area (Oeste): 10.6400, -71.6500
-
-WhatsApp text:
+Text:
 ${message}`;
 
       const openai = new OpenAI({
@@ -86,6 +93,7 @@ ${message}`;
       console.log(completion.choices[0].message.content);
       return this.parseMarkdownJson(completion.choices[0].message.content);
     } catch (error) {
+      console.error('Error parsing message to property:', error);
       throw new InternalServerErrorException(error);
     }
   }
@@ -98,9 +106,9 @@ ${message}`;
     const match = input.match(jsonRegex);
 
     if (!match || !match[1]) {
-      throw new Error('No se encontró bloque JSON válido');
+      return JSON.parse(input) as ParsedResponse;
     }
 
-    return JSON.parse(match[1]) as CreatePropertyInput;
+    return JSON.parse(match[1]) as ParsedResponse;
   }
 }
